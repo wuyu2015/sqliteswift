@@ -32,6 +32,22 @@ extension Sqlite {
         }
         
         /**
+         这个函数返回最近一次在指定数据库连接上完成的 INSERT、UPDATE 或 DELETE语句修改、插入或删除的行数。
+         执行其他类型的 SQL 语句不会修改该函数返回的值。
+         */
+        public var changes: Int32 {
+            return sqlite3_changes(db)
+        }
+        
+        /**
+         此函数返回自数据库连接打开以来完成的所有 INSERT、UPDATE 或 DELETE 语句插入、修改或删除的总行数，包括作为触发器程序的一部分执行的行为。
+         执行其他类型的 SQL 语句不会影响 totalChanges() 返回的值。
+         */
+        public var totalChanges: Int32 {
+            return sqlite3_total_changes(db)
+        }
+        
+        /**
          打开一个新的数据库连接
          
          flags 参数可以采用以下三个值之一，可选地与 SQLITE_OPEN_NOMUTEX、SQLITE_OPEN_FULLMUTEX、SQLITE_OPEN_SHAREDCACHE、SQLITE_OPEN_PRIVATECACHE 和/或 SQLITE_OPEN_URI 标志组合使用：
@@ -121,22 +137,6 @@ extension Sqlite {
          */
         public func extendedResultCodes(_ onoff: Bool) -> ErrorCode {
             return ErrorCode(rawValue: sqlite3_extended_result_codes(db, onoff ? 1 : 0))!
-        }
-        
-        /**
-         这个函数返回最近一次在指定数据库连接上完成的 INSERT、UPDATE 或 DELETE语句修改、插入或删除的行数。
-         执行其他类型的 SQL 语句不会修改该函数返回的值。
-         */
-        public func changes() -> Int32 {
-            return sqlite3_changes(db)
-        }
-        
-        /**
-         此函数返回自数据库连接打开以来完成的所有 INSERT、UPDATE 或 DELETE 语句插入、修改或删除的总行数，包括作为触发器程序的一部分执行的行为。
-         执行其他类型的 SQL 语句不会影响 totalChanges() 返回的值。
-         */
-        public func totalChanges() -> Int32 {
-            return sqlite3_total_changes(db)
         }
         
         public func interrupt() {
