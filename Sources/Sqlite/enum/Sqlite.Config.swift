@@ -120,12 +120,12 @@ extension Sqlite {
         case URI = 17
         
         /**
-         sqlite3_pcache_methods2*
+         SQLITE_CONFIG_PCACHE2
         */
         case PCACHE2 = 18
 
         /**
-         sqlite3_pcache_methods2*
+         SQLITE_CONFIG_GETPCACHE2
         */
         case GETPCACHE2 = 19
 

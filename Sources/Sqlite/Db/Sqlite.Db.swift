@@ -92,7 +92,7 @@ extension Sqlite {
 
          另请参阅：[sqlite3_temp_directory]
          */
-        init(path: String = ":memory:", flags: [FileOpenFlag] = [.READWRITE, .CREATE]) {
+        init(path: String = ":memory:", flags: [OpenFlag] = [.READWRITE, .CREATE]) {
             var dbPointer: OpaquePointer?
             guard sqlite3_open_v2(path, &dbPointer, flags.reduce(0) { $0 | $1.rawValue }, nil) == SQLITE_OK else {
                 fatalError("Failed to open database.")
@@ -185,6 +185,22 @@ extension Sqlite {
          */
         public func setProgressHandler(_ numberOfInstructions: Int32, _ callback: (@convention(c) (UnsafeMutableRawPointer?) -> Int32)!, _ context: UnsafeMutableRawPointer!) {
             sqlite3_progress_handler(db, numberOfInstructions, callback, context)
+        }
+        
+        public func errCode() -> ErrorCode {
+            return ErrorCode(rawValue: sqlite3_errcode(db))!
+        }
+        
+        public func extendedErrCode() -> ErrorCode {
+            return ErrorCode(rawValue: sqlite3_extended_errcode(db))!
+        }
+        
+        public func errMsg() -> String {
+            return String(cString: sqlite3_errmsg(db))
+        }
+        
+        public func setLimit(_ limit: Limit, _ newVal: Int32) -> ErrorCode {
+            return ErrorCode(rawValue: sqlite3_limit(db, limit.rawValue, newVal))!
         }
         
         deinit {

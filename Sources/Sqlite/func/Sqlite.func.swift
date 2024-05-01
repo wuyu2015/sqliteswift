@@ -44,7 +44,7 @@ extension Sqlite {
      分号在字符串字面量、带引号的标识符名称或注释中嵌入时不是独立的标记（它们是嵌入它们的标记的一部分），因此不计为语句终止符。
      在最后一个分号后面的空白和注释将被忽略。
      */
-    public func complete(_ sql: String) -> Bool {
+    public static func complete(_ sql: String) -> Bool {
         return sql.withCString { cString in
             return sqlite3_complete16(cString) == 1
         }
@@ -53,7 +53,7 @@ extension Sqlite {
     /**
      返回当前尚未释放的内存字节数（已经分配但尚未释放的内存）。
      */
-    public func memoryUsed() -> Int64 {
+    public static func memoryUsed() -> Int64 {
         return sqlite3_memory_used()
     }
     
@@ -62,7 +62,12 @@ extension Sqlite {
      你可以通过设置 resetFlag 参数来决定是否将高水位标记重置为当前内存使用量。
      memoryHighwater(0) 用来获取当前的内存高水位线（high-water mark），并且不重置它。
     */
-    public func memoryHighwater(_ resetFlag: Int32) -> Int64 {
+    public static func memoryHighwater(_ resetFlag: Int32) -> Int64 {
         return sqlite3_memory_highwater(resetFlag)
+    }
+    
+    @available(OSX 10.10, *)
+    public static func errStr(_ errCode: Int32) -> String {
+        return String(cString: sqlite3_errstr(errCode))
     }
 }

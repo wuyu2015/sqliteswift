@@ -1,5 +1,5 @@
 extension Sqlite {
-    public enum FileOpenFlag: Int32 {
+    public enum OpenFlag: Int32 {
         /// SQLITE_OPEN_READONLY: 打开数据库为只读模式，不允许进行写操作。
         case READONLY = 0x00000001
         /// SQLITE_OPEN_READWRITE: 打开数据库为读写模式，允许进行读和写操作。
@@ -44,6 +44,6 @@ extension Sqlite {
         case FILEPROTECTION_COMPLETEUNLESSOPEN = 0x00200000
         case FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION = 0x00300000
         case FILEPROTECTION_NONE = 0x00400000
-        case FILEPROTECTION_MASK = 0x00F00000
+        case FILEPROTECTION_MASK = 0x700000
     }
 }

@@ -197,6 +197,12 @@ extension Sqlite {
         /// SQLITE_IOERR_ROLLBACK_ATOMIC (SQLITE_IOERR | (31<<8))
         case IOERR_ROLLBACK_ATOMIC = 0x1F0A
         
+        /// SQLITE_IOERR_DATA (SQLITE_IOERR | (32<<8))
+        case IOERR_DATA = 0x200A
+        
+        /// SQLITE_IOERR_CORRUPTFS (SQLITE_IOERR | (33<<8))
+        case IOERR_CORRUPTFS = 0x210A
+        
         
         /// SQLITE_LOCKED_SHAREDCACHE (SQLITE_LOCKED |  (1<<8))
         case LOCKED_SHAREDCACHE = 0x106
@@ -210,6 +216,9 @@ extension Sqlite {
         
         /// SQLITE_BUSY_SNAPSHOT (SQLITE_BUSY   |  (2<<8))
         case BUSY_SNAPSHOT = 0x205
+        
+        /// SQLITE_BUSY_TIMEOUT (SQLITE_BUSY   |  (3<<8))
+        case BUSY_TIMEOUT = 0x305
         
         
         /// SQLITE_CANTOPEN_NOTEMPDIR (SQLITE_CANTOPEN | (1<<8))
@@ -227,6 +236,8 @@ extension Sqlite {
         /// SQLITE_CANTOPEN_DIRTYWAL (SQLITE_CANTOPEN | (5<<8)) /* Not Used */
         case CANTOPEN_DIRTYWAL = 0x50E
         
+        /// SQLITE_CANTOPEN_SYMLINK (SQLITE_CANTOPEN | (6<<8))
+        case CANTOPEN_SYMLINK = 0x60E
         
         /// SQLITE_CORRUPT_VTAB (SQLITE_CORRUPT | (1<<8))
         case CORRUPT_VTAB = 0x10B
@@ -234,6 +245,8 @@ extension Sqlite {
         /// SQLITE_CORRUPT_SEQUENCE (SQLITE_CORRUPT | (2<<8))
         case CORRUPT_SEQUENCE = 0x20B
         
+        /// SQLITE_CORRUPT_INDEX (SQLITE_CORRUPT | (3<<8))
+        case CORRUPT_INDEX = 0x30B
         
         /// SQLITE_READONLY_RECOVERY (SQLITE_READONLY | (1<<8))
         case READONLY_RECOVERY = 0x108
@@ -287,6 +300,12 @@ extension Sqlite {
         
         /// SQLITE_CONSTRAINT_ROWID (SQLITE_CONSTRAINT |(10<<8))
         case CONSTRAINT_ROWID = 0xA13
+        
+        /// SQLITE_CONSTRAINT_PINNED (SQLITE_CONSTRAINT |(11<<8))
+        case CONSTRAINT_PINNED = 0xB13
+        
+        /// SQLITE_CONSTRAINT_DATATYPE (SQLITE_CONSTRAINT |(12<<8))
+        case CONSTRAINT_DATATYPE = 0xC13
         
         
         /// SQLITE_NOTICE_RECOVER_WAL (SQLITE_NOTICE | (1<<8))
