@@ -108,9 +108,9 @@ extension Sqlite {
 
          另请参阅：[sqlite3_temp_directory]
          */
-        init(path: String = ":memory:", flags: [OpenFlag] = [.READWRITE, .CREATE]) {
+        init(path: String = ":memory:", flags: OpenFlag = [.READWRITE, .CREATE]) {
             var dbPointer: OpaquePointer?
-            guard sqlite3_open_v2(path, &dbPointer, flags.reduce(0) { $0 | $1.rawValue }, nil) == SQLITE_OK else {
+            guard sqlite3_open_v2(path, &dbPointer, flags.rawValue, nil) == SQLITE_OK else {
                 fatalError("Failed to open database.")
             }
             db = dbPointer!

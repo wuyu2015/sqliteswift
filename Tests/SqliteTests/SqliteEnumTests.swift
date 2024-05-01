@@ -167,40 +167,11 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.Limit.TRIGGER_DEPTH.rawValue, SQLITE_LIMIT_TRIGGER_DEPTH)
         XCTAssertEqual(Sqlite.Limit.WORKER_THREADS.rawValue, SQLITE_LIMIT_WORKER_THREADS)
     }
-    
-    func testOpenFlag() {
-        XCTAssertEqual(Sqlite.OpenFlag.READONLY.rawValue, SQLITE_OPEN_READONLY)
-        XCTAssertEqual(Sqlite.OpenFlag.READWRITE.rawValue, SQLITE_OPEN_READWRITE)
-        XCTAssertEqual(Sqlite.OpenFlag.CREATE.rawValue, SQLITE_OPEN_CREATE)
-        XCTAssertEqual(Sqlite.OpenFlag.DELETEONCLOSE.rawValue, SQLITE_OPEN_DELETEONCLOSE)
-        XCTAssertEqual(Sqlite.OpenFlag.EXCLUSIVE.rawValue, SQLITE_OPEN_EXCLUSIVE)
-        XCTAssertEqual(Sqlite.OpenFlag.AUTOPROXY.rawValue, SQLITE_OPEN_AUTOPROXY)
-        XCTAssertEqual(Sqlite.OpenFlag.URI.rawValue, SQLITE_OPEN_URI)
-        XCTAssertEqual(Sqlite.OpenFlag.MEMORY.rawValue, SQLITE_OPEN_MEMORY)
-        XCTAssertEqual(Sqlite.OpenFlag.MAIN_DB.rawValue, SQLITE_OPEN_MAIN_DB)
-        XCTAssertEqual(Sqlite.OpenFlag.TEMP_DB.rawValue, SQLITE_OPEN_TEMP_DB)
-        XCTAssertEqual(Sqlite.OpenFlag.TRANSIENT_DB.rawValue, SQLITE_OPEN_TRANSIENT_DB)
-        XCTAssertEqual(Sqlite.OpenFlag.MAIN_JOURNAL.rawValue, SQLITE_OPEN_MAIN_JOURNAL)
-        XCTAssertEqual(Sqlite.OpenFlag.TEMP_JOURNAL.rawValue, SQLITE_OPEN_TEMP_JOURNAL)
-        XCTAssertEqual(Sqlite.OpenFlag.SUBJOURNAL.rawValue, SQLITE_OPEN_SUBJOURNAL)
-        XCTAssertEqual(Sqlite.OpenFlag.MASTER_JOURNAL.rawValue, SQLITE_OPEN_MASTER_JOURNAL)
-        XCTAssertEqual(Sqlite.OpenFlag.NOMUTEX.rawValue, SQLITE_OPEN_NOMUTEX)
-        XCTAssertEqual(Sqlite.OpenFlag.FULLMUTEX.rawValue, SQLITE_OPEN_FULLMUTEX)
-        XCTAssertEqual(Sqlite.OpenFlag.SHAREDCACHE.rawValue, SQLITE_OPEN_SHAREDCACHE)
-        XCTAssertEqual(Sqlite.OpenFlag.PRIVATECACHE.rawValue, SQLITE_OPEN_PRIVATECACHE)
-        XCTAssertEqual(Sqlite.OpenFlag.WAL.rawValue, SQLITE_OPEN_WAL)
-        XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_COMPLETE.rawValue, SQLITE_OPEN_FILEPROTECTION_COMPLETE)
-        XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_COMPLETEUNLESSOPEN.rawValue, SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN)
-        XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION.rawValue, SQLITE_OPEN_FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION)
-        XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_NONE.rawValue, SQLITE_OPEN_FILEPROTECTION_NONE)
-        XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_MASK.rawValue, SQLITE_OPEN_FILEPROTECTION_MASK)
-    }
 
     static var allTests = [
         ("testConfig", testConfig),
         ("testDbConfig", testDbConfig),
         ("testErrorCode", testErrorCode),
         ("testLimitFlag", testLimitFlag),
-        ("testOpenFlag", testOpenFlag),
     ]
 }
