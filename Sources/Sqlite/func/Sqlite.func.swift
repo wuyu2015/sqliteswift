@@ -32,7 +32,7 @@ extension Sqlite {
     
     public static func config(_ option: DbConfig, _ params: CVarArg...) -> ErrorCode {
         return withVaList(params) { pointer in
-            return ErrorCode(rawValue: sqliteWrapperConfig(option.rawValue, pointer))!
+            return ErrorCode(rawValue: sqliteWrapperConfig(option.rawValue, pointer))
         }
     }
     

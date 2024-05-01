@@ -121,7 +121,7 @@ extension Sqlite {
          */
         public func dbConfig(_ option: Config, _ params: CVarArg...) -> ErrorCode {
             return withVaList(params) { pointer in
-                return ErrorCode(rawValue: sqliteWrapperDbConfig(db, option.rawValue, pointer))!
+                return ErrorCode(rawValue: sqliteWrapperDbConfig(db, option.rawValue, pointer))
             }
         }
         
@@ -136,7 +136,7 @@ extension Sqlite {
          [sqlite3_extended_errcode()] 获得最近错误的扩展代码。
          */
         public func extendedResultCodes(_ onoff: Bool) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_extended_result_codes(db, onoff ? 1 : 0))!
+            return ErrorCode(rawValue: sqlite3_extended_result_codes(db, onoff ? 1 : 0))
         }
         
         public func interrupt() {
@@ -162,7 +162,7 @@ extension Sqlite {
          在至少 "ms" 毫秒的休眠后，处理器返回 0，导致 [sqlite3_step()] 返回 [SQLITE_BUSY]。
          */
         public func busyTimeout(_ ms: Int32) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_busy_timeout(db, ms))!
+            return ErrorCode(rawValue: sqlite3_busy_timeout(db, ms))
         }
         
         /**
@@ -188,11 +188,11 @@ extension Sqlite {
         }
         
         public func errCode() -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_errcode(db))!
+            return ErrorCode(rawValue: sqlite3_errcode(db))
         }
         
         public func extendedErrCode() -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_extended_errcode(db))!
+            return ErrorCode(rawValue: sqlite3_extended_errcode(db))
         }
         
         public func errMsg() -> String {
@@ -200,7 +200,7 @@ extension Sqlite {
         }
         
         public func setLimit(_ limit: Limit, _ newVal: Int32) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_limit(db, limit.rawValue, newVal))!
+            return ErrorCode(rawValue: sqlite3_limit(db, limit.rawValue, newVal))
         }
         
         /**
@@ -226,7 +226,7 @@ extension Sqlite {
                 }
             }
             guard rc == SQLITE_OK else {
-                throw ErrorCode(rawValue: rc)!
+                throw ErrorCode(rawValue: rc)
             }
             return stmt
         }
