@@ -8,14 +8,24 @@ let package = Package(
     products: [
         .library(
             name: "Sqlite",
-            targets: ["Sqlite"]),
+            targets: ["Sqlite"]
+        ),
     ],
     dependencies: [],
-    targets: [.target(
+    targets: [
+        .target(
             name: "Sqlite",
-            dependencies: []),
+            dependencies: ["SqliteWrapper"]
+        ),
+        .target(
+            name: "SqliteWrapper",
+            path: "Sources/SqliteWrapper",
+            sources: ["include/SqliteWrapper.h", "src/SqliteWrapper.c"]
+        ),
         .testTarget(
             name: "SqliteTests",
-            dependencies: ["Sqlite"]),
+            dependencies: ["Sqlite"]
+        ),
     ]
 )
+

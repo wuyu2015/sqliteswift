@@ -1,0 +1,4 @@
+module SqliteWrapper {
+    header "SqliteWrapper.h"
+    export *
+}
