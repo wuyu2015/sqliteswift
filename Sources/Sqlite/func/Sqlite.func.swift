@@ -66,7 +66,7 @@ extension Sqlite {
         return sqlite3_memory_highwater(resetFlag)
     }
     
-    @available(OSX 10.10, *)
+    @available(OSX 10.10, iOS 8.2, *)
     public static func errStr(_ errCode: Int32) -> String {
         return String(cString: sqlite3_errstr(errCode))
     }

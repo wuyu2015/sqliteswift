@@ -1,5 +1,5 @@
 extension Sqlite {
-    public enum ErrorCode: Int32 {
+    public enum ErrorCode: Int32, Error {
         /// SQLITE_OK, 0, 操作成功
         case OK = 0x0
         

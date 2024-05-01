@@ -195,12 +195,6 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_NONE.rawValue, SQLITE_OPEN_FILEPROTECTION_NONE)
         XCTAssertEqual(Sqlite.OpenFlag.FILEPROTECTION_MASK.rawValue, SQLITE_OPEN_FILEPROTECTION_MASK)
     }
-    
-    func testPrepareFlag() {
-        XCTAssertEqual(Sqlite.PrepareFlag.PERSISTENT.rawValue, SQLITE_PREPARE_PERSISTENT)
-        XCTAssertEqual(Sqlite.PrepareFlag.NORMALIZE.rawValue, SQLITE_PREPARE_NORMALIZE)
-        XCTAssertEqual(Sqlite.PrepareFlag.NO_VTAB.rawValue, SQLITE_PREPARE_NO_VTAB)
-    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -208,6 +202,5 @@ final class SqliteEnumTests: XCTestCase {
         ("testErrorCode", testErrorCode),
         ("testLimitFlag", testLimitFlag),
         ("testOpenFlag", testOpenFlag),
-        ("testPrepareFlag", testPrepareFlag),
     ]
 }

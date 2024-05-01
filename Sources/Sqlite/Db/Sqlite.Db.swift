@@ -171,7 +171,7 @@ extension Sqlite {
          X 是回调函数，当指定的事件发生时被调用。如果 X 是 NULL，或者 M 的值为零，则跟踪被禁用。
          P 是上下文指针，它会被传递给回调函数。
          */
-        @available(OSX 10.12, *)
+        @available(OSX 10.12, iOS 12.0, *)
         public func trace(_ uMask: UInt32, _ xCallback: (@convention(c) (UInt32, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Int32)!, _ pCtx: UnsafeMutableRawPointer!) -> Int32 {
             return sqlite3_trace_v2(db, uMask, xCallback, pCtx)
         }
@@ -201,6 +201,34 @@ extension Sqlite {
         
         public func setLimit(_ limit: Limit, _ newVal: Int32) -> ErrorCode {
             return ErrorCode(rawValue: sqlite3_limit(db, limit.rawValue, newVal))!
+        }
+        
+        /**
+        准备 SQL 语句以供执行。
+
+        - Parameters:
+          - sql: 要准备的 SQL 语句。
+          - flags: 准备语句的标志。
+          - tail: 用于接收未使用的部分 SQL 语句的指针。
+
+        - Throws: 如果准备过程中出现错误，则抛出 SQLite 错误代码。
+
+        - Returns: 准备好的 SQLite 语句对象。
+        */
+        public func prepare(sql: String, flags: PrepareFlag = [], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> OpaquePointer? {
+            var stmt: OpaquePointer?
+            var rc: Int32
+            if #available(macOS 10.14, iOS 12.0, *) {
+                rc = sqlite3_prepare_v3(db, sql, -1, UInt32(flags.rawValue), &stmt, tail)
+            } else {
+                rc = sql.withCString { cString in
+                    sqlite3_prepare_v2(db, cString, -1, &stmt, nil)
+                }
+            }
+            guard rc == SQLITE_OK else {
+                throw ErrorCode(rawValue: rc)!
+            }
+            return stmt
         }
         
         deinit {

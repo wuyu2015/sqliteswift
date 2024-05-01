@@ -1,16 +1,20 @@
+import SQLite3
+
 extension Sqlite {
-    public enum PrepareFlag: Int32 {
-        /// SQLITE_PREPARE_PERSISTENT 标志是一个提示，告诉查询规划器准备好的语句将被长时间保留并可能多次重用。
-        /// 如果没有此标志，sqlite3_prepare_v3() 和 sqlite3_prepare16_v3() 假设准备好的语句将仅被使用一次或最多几次，
-        /// 然后很快就会使用 sqlite3_finalize() 销毁。当前的实现根据此提示避免使用回看内存，以免耗尽有限的回看内存。
-        /// SQLite 的将来版本可能会以不同的方式处理此提示。
-        case PERSISTENT = 1
+    public struct PrepareFlag: OptionSet {
+        public let rawValue: Int32
         
-        /// SQLITE_PREPARE_NORMALIZE 标志是一个无操作。
-        case NORMALIZE = 2
+        public init(rawValue: Int32) {
+            self.rawValue = rawValue
+        }
         
-        /// SQLITE_PREPARE_NO_VTAB 标志导致 SQL 编译器返回错误（错误代码SQLITE_ERROR），
-        /// 如果语句使用任何虚拟表。
-        case NO_VTAB = 4
+        /// 这个标志告诉 SQLite 将预编译的 SQL 语句保存在缓存中，以便在多次执行相同语句时提高性能。如果使用此标志，SQLite 将尝试在内部缓存中查找已经准备好的相同 SQL 语句，从而避免重新解析和编译它们。
+        static let PERSISTENT = SQLITE_PREPARE_PERSISTENT
+        
+        /// 这个标志告诉 SQLite 在准备 SQL 语句时对其进行规范化。规范化可以消除语句中的不同形式，例如将字符串常量的引号标准化为单引号，以便更容易比较和缓存。这有助于提高查询的重用性和性能。
+        static let NORMALIZE = SQLITE_PREPARE_NORMALIZE
+        
+        /// 这个标志告诉 SQLite 在准备阶段不要解析虚拟表。虚拟表是一种特殊的表类型，可能在运行时动态改变结构。如果你确定你的 SQL 语句中不包含虚拟表，使用此标志可以提高性能，因为 SQLite 不会尝试解析虚拟表。
+        static let NO_VTAB = SQLITE_PREPARE_NO_VTAB
     }
 }
