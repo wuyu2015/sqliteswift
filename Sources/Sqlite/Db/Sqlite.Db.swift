@@ -12,10 +12,14 @@ extension Sqlite {
             db = dbPointer!
         }
         
-        func dbConfig(_ option: Config, _ params: CVarArg...) -> ErrorCode {
+        public func dbConfig(_ option: Config, _ params: CVarArg...) -> ErrorCode {
             return withVaList(params) { pointer in
                 return ErrorCode(rawValue: sqliteWrapperDbConfig(db, option.rawValue, pointer))!
             }
+        }
+        
+        public func extendedResultCodes(_ onoff: Bool) -> ErrorCode {
+            return ErrorCode(rawValue: sqlite3_extended_result_codes(db, onoff ? 1 : 0))!
         }
 
         deinit {
