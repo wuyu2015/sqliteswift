@@ -4,7 +4,7 @@ extension Sqlite {
          SQLITE_CONFIG_SINGLETHREAD：配置SQLite为单线程模式。
          SQLite不支持单线程行为，如果使用SQLITE_CONFIG_SINGLETHREAD配置选项调用sqlite3_config()，则会返回SQLITE_MISUSE
          */
-         // case SINGLETHREAD = -1
+         // case SINGLETHREAD = 1
 
         /**
          SQLITE_CONFIG_MULTITHREAD：配置SQLite为多线程模式，禁用数据库连接和预处理语句对象的互斥锁。
@@ -23,8 +23,7 @@ extension Sqlite {
          在此模式下（在SQLite使用SQLITE_THREADSAFE = 1编译时默认情况下），SQLite库本身将序列化对数据库连接和预编译语句的访问，以便应用程序可以在不同的线程中同时使用相同的数据库连接或相同的预编译语句。
          如果SQLite使用编译时选项SQLITE_THREADSAFE | SQLITE_THREADSAFE = 0编译，则无法设置Serialized线程模式，如果使用SQLITE_CONFIG_SERIALIZED配置选项调用sqlite3_config()，则会返回SQLITE_ERROR。
          */
-         
-        case SERIALIZED = 1
+        case SERIALIZED = 3
         
         /**
          SQLITE_CONFIG_MALLOC：配置SQLite使用自定义的内存分配器。
