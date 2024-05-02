@@ -134,7 +134,7 @@ extension Sqlite {
         }
         
         public mutating func bindZeroBlob(index: Int = 0, length: Int) throws -> Self {
-            if #available(OSX 10.12, *) {
+            if #available(OSX 10.12, iOS 10.0, *) {
                 return try checkResult(sqlite3_bind_zeroblob64(stmt, updateBindIndex(index), sqlite3_uint64(length)))
             } else {
                 return try checkResult(sqlite3_bind_zeroblob(stmt, updateBindIndex(index), Int32(length)))
