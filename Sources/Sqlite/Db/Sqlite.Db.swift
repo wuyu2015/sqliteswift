@@ -204,18 +204,18 @@ extension Sqlite {
         }
         
         /**
-        准备 SQL 语句以供执行。
-
-        - Parameters:
-          - sql: 要准备的 SQL 语句。
-          - flags: 准备语句的标志。
-          - tail: 用于接收未使用的部分 SQL 语句的指针。
-
-        - Throws: 如果准备过程中出现错误，则抛出 SQLite 错误代码。
-
-        - Returns: 准备好的 SQLite 语句对象。
+         准备 SQL 语句以供执行。
+         
+         - Parameters:
+            - sql: 要准备的 SQL 语句。
+            - flags: 准备语句的标志。
+            - tail: 用于接收未使用的部分 SQL 语句的指针。
+         
+         - Throws: 如果准备过程中出现错误，则抛出 SQLite 错误代码。
+         
+         - Returns: 准备好的 SQLite 语句对象。
         */
-        public func prepare(sql: String, flags: PrepareFlag = [], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> OpaquePointer? {
+        public func prepare(sql: String, flags: PrepareFlag = [], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt? {
             var stmt: OpaquePointer?
             var rc: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
@@ -228,7 +228,7 @@ extension Sqlite {
             guard rc == SQLITE_OK else {
                 throw ErrorCode(rawValue: rc)
             }
-            return stmt
+            return Stmt(stmt!)
         }
         
         deinit {
