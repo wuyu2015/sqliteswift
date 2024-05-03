@@ -135,11 +135,21 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.Limit.TRIGGER_DEPTH.rawValue, SQLITE_LIMIT_TRIGGER_DEPTH)
         XCTAssertEqual(Sqlite.Limit.WORKER_THREADS.rawValue, SQLITE_LIMIT_WORKER_THREADS)
     }
+    
+    func testColumnType() {
+        XCTAssertEqual(Sqlite.ColumnType.INTEGER .rawValue, SQLITE_INTEGER)
+        XCTAssertEqual(Sqlite.ColumnType.FLOAT .rawValue, SQLITE_FLOAT)
+        XCTAssertEqual(Sqlite.ColumnType.BLOB .rawValue, SQLITE_BLOB)
+        XCTAssertEqual(Sqlite.ColumnType.NULL .rawValue, SQLITE_NULL)
+        XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE_TEXT)
+        XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE3_TEXT)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
         ("testDbConfig", testDbConfig),
         ("testErrorCode", testErrorCode),
         ("testLimitFlag", testLimitFlag),
+        ("testColumnType", testColumnType),
     ]
 }
