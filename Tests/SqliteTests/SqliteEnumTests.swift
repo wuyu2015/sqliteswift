@@ -144,6 +144,15 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE_TEXT)
         XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE3_TEXT)
     }
+    
+    func testTextEncoding() {
+        XCTAssertEqual(Sqlite.TextEncoding.UTF8 .rawValue, SQLITE_UTF8)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16LE .rawValue, SQLITE_UTF16LE)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16BE .rawValue, SQLITE_UTF16BE)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16 .rawValue, SQLITE_UTF16)
+        XCTAssertEqual(Sqlite.TextEncoding.ANY .rawValue, SQLITE_ANY)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16_ALIGNED .rawValue, SQLITE_UTF16_ALIGNED)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -151,5 +160,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testErrorCode", testErrorCode),
         ("testLimitFlag", testLimitFlag),
         ("testColumnType", testColumnType),
+        ("testTextEncoding", testTextEncoding),
     ]
 }
