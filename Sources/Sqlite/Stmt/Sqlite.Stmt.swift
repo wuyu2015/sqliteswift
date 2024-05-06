@@ -4,6 +4,7 @@ import SQLite3
 extension Sqlite {
     public struct Stmt {
         public let stmt: OpaquePointer
+        public var db: Db?
         var bindIndex: Int32 = 0
         
         /**
@@ -63,8 +64,9 @@ extension Sqlite {
             return sqlite3_data_count(stmt)
         }
         
-        init(_ pStmt: OpaquePointer) {
+        init(_ pStmt: OpaquePointer, db: Db? = nil) {
             stmt = pStmt
+            self.db = db
         }
         
         private func checkResult(_ result: Int32) throws -> Self {
@@ -344,5 +346,13 @@ extension Sqlite {
             }
         }
         
+        // 返回与预处理语句相关的数据库连接句柄
+        public mutating func dbHandle() -> Db {
+            if let db = db {
+                return db
+            }
+            db = Db(db: sqlite3_db_handle(stmt))
+            return db!
+        }
     }
 }

@@ -70,4 +70,68 @@ extension Sqlite {
     public static func errStr(_ errCode: Int32) -> String {
         return String(cString: sqlite3_errstr(errCode))
     }
+    
+    public static func valueBlob(_ value: OpaquePointer!) -> UnsafeRawPointer! {
+        return sqlite3_value_blob(value)
+    }
+    
+    public static func valueDouble(_ value: OpaquePointer!) -> Double {
+        return sqlite3_value_double(value)
+    }
+    
+    public static func valueInt(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_int(value)
+    }
+    
+    public static func valueInt64(_ value: OpaquePointer!) -> Int64 {
+        return sqlite3_value_int64(value)
+    }
+    
+    @available(OSX 10.14, iOS 12.0, *)
+    public static func valuePointer(_ value: OpaquePointer!, _ type: UnsafePointer<Int8>!) -> UnsafeMutableRawPointer! {
+        return sqlite3_value_pointer(value, type)
+    }
+    
+    public static func valueText(_ value: OpaquePointer!) -> UnsafePointer<UInt8>! {
+        return sqlite3_value_text(value)
+    }
+    
+    public static func valueText16(_ value: OpaquePointer!) -> UnsafeRawPointer! {
+        return sqlite3_value_text16(value)
+    }
+    
+    public static func valueText16le(_ value: OpaquePointer!) -> UnsafeRawPointer! {
+        return sqlite3_value_text16le(value)
+    }
+    
+    public static func valueText16be(_ value: OpaquePointer!) -> UnsafeRawPointer! {
+        return sqlite3_value_text16be(value)
+    }
+    
+    public static func valueBytes(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_bytes(value)
+    }
+    
+    public static func valueBytes16(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_bytes16(value)
+    }
+    
+    public static func valueType(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_type(value)
+    }
+    
+    public static func valueNumericType(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_numeric_type(value)
+    }
+    
+    /// 当调用 sqlite3_bind_pointer 或 sqlite3_bind_pointer 函数来绑定参数时，可以使用 sqlite3_value_nochange 来检查该参数是否与先前的绑定相同。如果值相同，它将返回非零值，否则返回零。
+    @available(OSX 10.14, iOS 12.0, *)
+    public static func valueNoChange(_ value: OpaquePointer!) -> Bool {
+        return sqlite3_value_nochange(value) == 0
+    }
+    
+    @available(OSX 10.15, iOS 13.0, *)
+    public static func valueFromBind(_ value: OpaquePointer!) -> Int32 {
+        return sqlite3_value_frombind(value)
+    }
 }

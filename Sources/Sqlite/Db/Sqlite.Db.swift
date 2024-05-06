@@ -2,7 +2,13 @@ import SqliteWrapper
 
 extension Sqlite {
     public class Db {
-        public let db: OpaquePointer
+        public let db: OpaquePointer!
+        
+        private func checkResult(_ result: Int32) throws {
+            guard result == SQLITE_OK else {
+                throw ErrorCode(rawValue: result)
+            }
+        }
         
         /**
          ROWID:
@@ -45,6 +51,28 @@ extension Sqlite {
          */
         public var totalChanges: Int32 {
             return sqlite3_total_changes(db)
+        }
+        
+        /**
+         该函数用于测试给定的数据库连接是否处于自动提交模式。
+         默认情况下自动提交模式是开启的，可以通过执行 BEGIN 语句来禁用，通过执行 COMMIT 或 ROLLBACK 语句重新启用。
+         在多语句事务中，如果发生特定类型的错误，如 SQLITE_FULL、SQLITE_IOERR 等，则事务可能会自动回滚。
+         要确定 SQLite 是否在错误发生后自动回滚事务，可以使用此函数。
+         */
+        public var autocommit: Bool {
+            return sqlite3_get_autocommit(db) != 0
+        }
+        
+        public var errCode: ErrorCode {
+            return ErrorCode(rawValue: sqlite3_errcode(db))
+        }
+        
+        public var extendedErrCod: ErrorCode {
+            return ErrorCode(rawValue: sqlite3_extended_errcode(db))
+        }
+        
+        public var errMs: String {
+            return String(cString: sqlite3_errmsg(db))
         }
         
         /**
@@ -116,13 +144,17 @@ extension Sqlite {
             db = dbPointer!
         }
         
+        init(db: OpaquePointer!) {
+            self.db = db
+        }
+        
         /**
          数据库连接配置
          */
-        public func dbConfig(_ option: Config, _ params: CVarArg...) -> ErrorCode {
-            return withVaList(params) { pointer in
-                return ErrorCode(rawValue: sqliteWrapperDbConfig(db, option.rawValue, pointer))
-            }
+        public func dbConfig(_ option: Config, _ params: CVarArg...) throws {
+            try checkResult(withVaList(params) { pointer in
+                return sqliteWrapperDbConfig(db, option.rawValue, pointer)
+            })
         }
         
         /**
@@ -135,8 +167,8 @@ extension Sqlite {
          在每个数据库连接的基础上启用或禁用。或者，可以使用
          [sqlite3_extended_errcode()] 获得最近错误的扩展代码。
          */
-        public func extendedResultCodes(_ onoff: Bool) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_extended_result_codes(db, onoff ? 1 : 0))
+        public func extendedResultCodes(_ onOff: Bool) throws {
+            return try checkResult(sqlite3_extended_result_codes(db, onOff ? 1 : 0))
         }
         
         public func interrupt() {
@@ -161,8 +193,8 @@ extension Sqlite {
          处理器将休眠多次，直到累计的休眠时间至少达到 "ms" 毫秒。
          在至少 "ms" 毫秒的休眠后，处理器返回 0，导致 [sqlite3_step()] 返回 [SQLITE_BUSY]。
          */
-        public func busyTimeout(_ ms: Int32) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_busy_timeout(db, ms))
+        public func busyTimeout(_ ms: Int32) throws {
+            return try checkResult(sqlite3_busy_timeout(db, ms))
         }
         
         /**
@@ -187,20 +219,10 @@ extension Sqlite {
             sqlite3_progress_handler(db, numberOfInstructions, callback, context)
         }
         
-        public func errCode() -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_errcode(db))
-        }
         
-        public func extendedErrCode() -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_extended_errcode(db))
-        }
         
-        public func errMsg() -> String {
-            return String(cString: sqlite3_errmsg(db))
-        }
-        
-        public func setLimit(_ limit: Limit, _ newVal: Int32) -> ErrorCode {
-            return ErrorCode(rawValue: sqlite3_limit(db, limit.rawValue, newVal))
+        public func setLimit(_ limit: Limit, _ newVal: Int32) throws {
+            try checkResult(sqlite3_limit(db, limit.rawValue, newVal))
         }
         
         /**
@@ -229,6 +251,140 @@ extension Sqlite {
                 throw ErrorCode(rawValue: rc)
             }
             return Stmt(stmt!)
+        }
+        
+        /**
+        在SQLite数据库中创建新的SQL函数或聚合函数。
+
+        - Parameters:
+          - name：函数的名称。
+          - function：每次调用函数时要调用的函数。
+          - argumentCount：函数接受的参数数量。
+          - textRep：函数的文本编码表示形式。默认为 `SQLITE_UTF8`。
+          - userData：传递给函数的任意用户数据的可选指针。
+          - step：聚合函数的步骤函数。默认为一个空操作函数。
+          - finalize：聚合函数的完成函数。默认为一个空操作函数。
+          - destroy：用户数据的析构函数。默认为一个空操作函数。
+
+        - Throws: 如果函数创建失败，则抛出 `ErrorCode`。
+        */
+        public func createFunction(
+            name: String,
+            function: @escaping @convention(c) (OpaquePointer?, Int32, UnsafeMutablePointer<OpaquePointer?>?) -> Void,
+            argumentCount: Int32,
+            encoding: TextEncoding = .UTF8,
+            userData: UnsafeMutableRawPointer? = nil,
+            step: @escaping @convention(c) (OpaquePointer?, Int32, UnsafeMutablePointer<OpaquePointer?>?) -> Void = { _, _, _ in },
+            finalize: @escaping @convention(c) (OpaquePointer?) -> Void = { _ in },
+            destroy: @escaping @convention(c) (UnsafeMutableRawPointer?) -> Void = { _ in }
+        ) throws {
+            let result = sqlite3_create_function_v2(
+                db,
+                name,
+                argumentCount,
+                encoding.rawValue,
+                userData,
+                function,
+                step,
+                finalize,
+                destroy
+            )
+            guard result == SQLITE_OK else {
+                throw ErrorCode(rawValue: result)
+            }
+        }
+        
+        @available(OSX 10.8, *)
+        public func fileName(dbName: String) -> String? {
+            guard let cFilename = sqlite3_db_filename(db, dbName) else {
+                return nil
+            }
+            return String(cString: cFilename)
+        }
+        
+        @available(OSX 10.8, *)
+        public func readOnly(dbName: String) throws -> Bool {
+            let result = sqlite3_db_readonly(db, dbName)
+            guard result != -1 else {
+                throw DbError.dbNotFound
+            }
+            return result == 1
+        }
+        
+        public func nextStmt(stmt: Stmt) -> Stmt {
+            return Stmt(sqlite3_next_stmt(db, stmt.stmt), db: self)
+        }
+        
+        public func commitHook(
+            _ callback: (@convention(c) (UnsafeMutableRawPointer?) -> Int32)!,
+            userData: UnsafeMutableRawPointer!
+        ) {
+            sqlite3_commit_hook(db, callback, userData)
+        }
+        
+        public func rollbackHook(
+            _ callback: (@convention(c) (UnsafeMutableRawPointer?) -> Void)!,
+            userData: UnsafeMutableRawPointer!
+        ){
+            sqlite3_rollback_hook(db, callback, userData)
+        }
+        
+        public func updateHook(
+            _ callback : (@convention(c) (UnsafeMutableRawPointer?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, sqlite3_int64) -> Void)!,
+            userData: UnsafeMutableRawPointer!
+        ) -> UnsafeMutableRawPointer! {
+            sqlite3_update_hook(db, callback, userData)
+        }
+        
+        public func dbReleaseMemory(_ amount: Int32) -> Int32 {
+            return sqlite3_db_release_memory(db)
+        }
+        
+        public func tableColumnMetadata(
+            dbName: String?,
+            tableName: String,
+            columnName: String
+        ) -> (dataType: String?, collSeq: String?, notNull: Bool, primaryKey: Bool, autoinc: Bool)? {
+            var dataType: UnsafePointer<Int8>?
+            var collSeq: UnsafePointer<Int8>?
+            var notNull: Int32 = 0
+            var primaryKey: Int32 = 0
+            var autoinc: Int32 = 0
+
+            let dbNamePointer = dbName.flatMap { strdup($0) }
+            let tableNamePointer = strdup(tableName)
+            let columnNamePointer = strdup(columnName)
+
+            let result = sqlite3_table_column_metadata(
+                db,
+                dbNamePointer,
+                tableNamePointer,
+                columnNamePointer,
+                &dataType,
+                &collSeq,
+                &notNull,
+                &primaryKey,
+                &autoinc
+            )
+
+            if result == SQLITE_OK {
+                defer {
+                    free(dbNamePointer)
+                    free(tableNamePointer)
+                    free(columnNamePointer)
+                }
+                return (
+                    dataType: dataType.map { String(cString: $0) },
+                    collSeq: collSeq.map { String(cString: $0) },
+                    notNull: notNull != 0,
+                    primaryKey: primaryKey != 0,
+                    autoinc: autoinc != 0
+                )
+            } else {
+                let errorMessage = String(cString: sqlite3_errmsg(db))
+                print("Error: \(errorMessage)")
+                return nil
+            }
         }
         
         deinit {
