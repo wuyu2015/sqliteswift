@@ -137,21 +137,39 @@ final class SqliteEnumTests: XCTestCase {
     }
     
     func testColumnType() {
-        XCTAssertEqual(Sqlite.ColumnType.INTEGER .rawValue, SQLITE_INTEGER)
-        XCTAssertEqual(Sqlite.ColumnType.FLOAT .rawValue, SQLITE_FLOAT)
-        XCTAssertEqual(Sqlite.ColumnType.BLOB .rawValue, SQLITE_BLOB)
-        XCTAssertEqual(Sqlite.ColumnType.NULL .rawValue, SQLITE_NULL)
-        XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE_TEXT)
-        XCTAssertEqual(Sqlite.ColumnType.TEXT .rawValue, SQLITE3_TEXT)
+        XCTAssertEqual(Sqlite.ColumnType.INTEGER.rawValue, SQLITE_INTEGER)
+        XCTAssertEqual(Sqlite.ColumnType.FLOAT.rawValue, SQLITE_FLOAT)
+        XCTAssertEqual(Sqlite.ColumnType.BLOB.rawValue, SQLITE_BLOB)
+        XCTAssertEqual(Sqlite.ColumnType.NULL.rawValue, SQLITE_NULL)
+        XCTAssertEqual(Sqlite.ColumnType.TEXT.rawValue, SQLITE_TEXT)
+        XCTAssertEqual(Sqlite.ColumnType.TEXT.rawValue, SQLITE3_TEXT)
     }
     
     func testTextEncoding() {
-        XCTAssertEqual(Sqlite.TextEncoding.UTF8 .rawValue, SQLITE_UTF8)
-        XCTAssertEqual(Sqlite.TextEncoding.UTF16LE .rawValue, SQLITE_UTF16LE)
-        XCTAssertEqual(Sqlite.TextEncoding.UTF16BE .rawValue, SQLITE_UTF16BE)
-        XCTAssertEqual(Sqlite.TextEncoding.UTF16 .rawValue, SQLITE_UTF16)
-        XCTAssertEqual(Sqlite.TextEncoding.ANY .rawValue, SQLITE_ANY)
-        XCTAssertEqual(Sqlite.TextEncoding.UTF16_ALIGNED .rawValue, SQLITE_UTF16_ALIGNED)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF8.rawValue, SQLITE_UTF8)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16LE.rawValue, SQLITE_UTF16LE)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16BE.rawValue, SQLITE_UTF16BE)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16.rawValue, SQLITE_UTF16)
+        XCTAssertEqual(Sqlite.TextEncoding.ANY.rawValue, SQLITE_ANY)
+        XCTAssertEqual(Sqlite.TextEncoding.UTF16_ALIGNED.rawValue, SQLITE_UTF16_ALIGNED)
+    }
+    
+    func testIndexConstraint() {
+        XCTAssertEqual(Sqlite.IndexConstraint.EQ.rawValue, SQLITE_INDEX_CONSTRAINT_EQ)
+        XCTAssertEqual(Sqlite.IndexConstraint.GT.rawValue, SQLITE_INDEX_CONSTRAINT_GT)
+        XCTAssertEqual(Sqlite.IndexConstraint.LE.rawValue, SQLITE_INDEX_CONSTRAINT_LE)
+        XCTAssertEqual(Sqlite.IndexConstraint.LT.rawValue, SQLITE_INDEX_CONSTRAINT_LT)
+        XCTAssertEqual(Sqlite.IndexConstraint.GE.rawValue, SQLITE_INDEX_CONSTRAINT_GE)
+        XCTAssertEqual(Sqlite.IndexConstraint.MATCH.rawValue, SQLITE_INDEX_CONSTRAINT_MATCH)
+        XCTAssertEqual(Sqlite.IndexConstraint.LIKE.rawValue, SQLITE_INDEX_CONSTRAINT_LIKE)
+        XCTAssertEqual(Sqlite.IndexConstraint.GLOB.rawValue, SQLITE_INDEX_CONSTRAINT_GLOB)
+        XCTAssertEqual(Sqlite.IndexConstraint.REGEXP.rawValue, SQLITE_INDEX_CONSTRAINT_REGEXP)
+        XCTAssertEqual(Sqlite.IndexConstraint.NE.rawValue, SQLITE_INDEX_CONSTRAINT_NE)
+        XCTAssertEqual(Sqlite.IndexConstraint.ISNOT.rawValue, SQLITE_INDEX_CONSTRAINT_ISNOT)
+        XCTAssertEqual(Sqlite.IndexConstraint.ISNOTNULL.rawValue, SQLITE_INDEX_CONSTRAINT_ISNOTNULL)
+        XCTAssertEqual(Sqlite.IndexConstraint.ISNULL.rawValue, SQLITE_INDEX_CONSTRAINT_ISNULL)
+        XCTAssertEqual(Sqlite.IndexConstraint.IS.rawValue, SQLITE_INDEX_CONSTRAINT_IS)
+        XCTAssertEqual(Sqlite.IndexConstraint.FUNCTION.rawValue, SQLITE_INDEX_CONSTRAINT_FUNCTION)
     }
 
     static var allTests = [
@@ -161,5 +179,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testLimitFlag", testLimitFlag),
         ("testColumnType", testColumnType),
         ("testTextEncoding", testTextEncoding),
+        ("testIndexConstraint", testIndexConstraint),
     ]
 }
