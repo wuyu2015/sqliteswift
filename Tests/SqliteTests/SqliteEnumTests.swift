@@ -171,6 +171,23 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.IndexConstraint.IS.rawValue, SQLITE_INDEX_CONSTRAINT_IS)
         XCTAssertEqual(Sqlite.IndexConstraint.FUNCTION.rawValue, SQLITE_INDEX_CONSTRAINT_FUNCTION)
     }
+    
+    func testDbStatus() {
+        XCTAssertEqual(Sqlite.DbStatus.LOOKASIDE_USED.rawValue, SQLITE_DBSTATUS_LOOKASIDE_USED)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_USED.rawValue, SQLITE_DBSTATUS_CACHE_USED)
+        XCTAssertEqual(Sqlite.DbStatus.SCHEMA_USED.rawValue, SQLITE_DBSTATUS_SCHEMA_USED)
+        XCTAssertEqual(Sqlite.DbStatus.STMT_USED.rawValue, SQLITE_DBSTATUS_STMT_USED)
+        XCTAssertEqual(Sqlite.DbStatus.LOOKASIDE_HIT.rawValue, SQLITE_DBSTATUS_LOOKASIDE_HIT)
+        XCTAssertEqual(Sqlite.DbStatus.LOOKASIDE_MISS_SIZE.rawValue, SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE)
+        XCTAssertEqual(Sqlite.DbStatus.LOOKASIDE_MISS_FULL.rawValue, SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_HIT.rawValue, SQLITE_DBSTATUS_CACHE_HIT)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_MISS.rawValue, SQLITE_DBSTATUS_CACHE_MISS)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_WRITE.rawValue, SQLITE_DBSTATUS_CACHE_WRITE)
+        XCTAssertEqual(Sqlite.DbStatus.DEFERRED_FKS.rawValue, SQLITE_DBSTATUS_DEFERRED_FKS)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_USED_SHARED.rawValue, SQLITE_DBSTATUS_CACHE_USED_SHARED)
+        XCTAssertEqual(Sqlite.DbStatus.CACHE_SPILL.rawValue, SQLITE_DBSTATUS_CACHE_SPILL)
+        XCTAssertEqual(Sqlite.DbStatus.MAX, SQLITE_DBSTATUS_MAX)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -180,5 +197,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testColumnType", testColumnType),
         ("testTextEncoding", testTextEncoding),
         ("testIndexConstraint", testIndexConstraint),
+        ("testDbStatus", testDbStatus),
     ]
 }
