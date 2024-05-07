@@ -188,6 +188,19 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.DbStatus.CACHE_SPILL.rawValue, SQLITE_DBSTATUS_CACHE_SPILL)
         XCTAssertEqual(Sqlite.DbStatus.MAX, SQLITE_DBSTATUS_MAX)
     }
+    
+    func testStatus() {
+        XCTAssertEqual(Sqlite.Status.MEMORY_USED.rawValue, SQLITE_STATUS_MEMORY_USED)
+        XCTAssertEqual(Sqlite.Status.PAGECACHE_USED.rawValue, SQLITE_STATUS_PAGECACHE_USED)
+        XCTAssertEqual(Sqlite.Status.PAGECACHE_OVERFLOW.rawValue, SQLITE_STATUS_PAGECACHE_OVERFLOW)
+        XCTAssertEqual(Sqlite.Status.SCRATCH_USED.rawValue, SQLITE_STATUS_SCRATCH_USED)
+        XCTAssertEqual(Sqlite.Status.SCRATCH_OVERFLOW.rawValue, SQLITE_STATUS_SCRATCH_OVERFLOW)
+        XCTAssertEqual(Sqlite.Status.MALLOC_SIZE.rawValue, SQLITE_STATUS_MALLOC_SIZE)
+        XCTAssertEqual(Sqlite.Status.PARSER_STACK.rawValue, SQLITE_STATUS_PARSER_STACK)
+        XCTAssertEqual(Sqlite.Status.PAGECACHE_SIZE.rawValue, SQLITE_STATUS_PAGECACHE_SIZE)
+        XCTAssertEqual(Sqlite.Status.SCRATCH_SIZE.rawValue, SQLITE_STATUS_SCRATCH_SIZE)
+        XCTAssertEqual(Sqlite.Status.MALLOC_COUNT.rawValue, SQLITE_STATUS_MALLOC_COUNT)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -198,5 +211,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testTextEncoding", testTextEncoding),
         ("testIndexConstraint", testIndexConstraint),
         ("testDbStatus", testDbStatus),
+        ("testStatus", testStatus),
     ]
 }
