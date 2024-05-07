@@ -201,6 +201,16 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.Status.SCRATCH_SIZE.rawValue, SQLITE_STATUS_SCRATCH_SIZE)
         XCTAssertEqual(Sqlite.Status.MALLOC_COUNT.rawValue, SQLITE_STATUS_MALLOC_COUNT)
     }
+    
+    func testStmtStatus() {
+        XCTAssertEqual(Sqlite.StmtStatus.FULLSCAN_STEP.rawValue, SQLITE_STMTSTATUS_FULLSCAN_STEP)
+        XCTAssertEqual(Sqlite.StmtStatus.SORT.rawValue, SQLITE_STMTSTATUS_SORT)
+        XCTAssertEqual(Sqlite.StmtStatus.AUTOINDEX.rawValue, SQLITE_STMTSTATUS_AUTOINDEX)
+        XCTAssertEqual(Sqlite.StmtStatus.VM_STEP.rawValue, SQLITE_STMTSTATUS_VM_STEP)
+        XCTAssertEqual(Sqlite.StmtStatus.REPREPARE.rawValue, SQLITE_STMTSTATUS_REPREPARE)
+        XCTAssertEqual(Sqlite.StmtStatus.RUN.rawValue, SQLITE_STMTSTATUS_RUN)
+        XCTAssertEqual(Sqlite.StmtStatus.MEMUSED.rawValue, SQLITE_STMTSTATUS_MEMUSED)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -212,5 +222,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testIndexConstraint", testIndexConstraint),
         ("testDbStatus", testDbStatus),
         ("testStatus", testStatus),
+        ("testStmtStatus", testStmtStatus),
     ]
 }
