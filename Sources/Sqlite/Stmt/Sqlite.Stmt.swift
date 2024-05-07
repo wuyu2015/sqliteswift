@@ -354,5 +354,9 @@ extension Sqlite {
             db = Db(db: sqlite3_db_handle(stmt))
             return db!
         }
+        
+        public func status(_ op: StmtStatus, reset: Bool = false) -> Int32 {
+            return sqlite3_stmt_status(stmt, op.rawValue, reset ? 1 : 0)
+        }
     }
 }
