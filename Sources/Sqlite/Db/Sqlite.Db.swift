@@ -75,6 +75,20 @@ extension Sqlite {
             return String(cString: sqlite3_errmsg(db))
         }
         
+        public var vtabOnConflict: Conflict {
+            return Conflict(rawValue: sqlite3_vtab_on_conflict(db))!
+        }
+        
+        @available(OSX 10.14, iOS 12.0, *)
+        public var vtabOnChange: Bool {
+            return sqlite3_vtab_nochange(db) != 0
+        }
+        
+        @available(OSX 10.12, iOS 10.0, *)
+        public var systemErrno: Int32 {
+            return sqlite3_system_errno(db)
+        }
+        
         /**
          打开一个新的数据库连接
          
@@ -410,15 +424,6 @@ extension Sqlite {
             let result = sqlite3_db_status(db, op.rawValue, &current, &highwater, reset ? 1 : 0)
             try checkResult(result)
             return (current, highwater)
-        }
-        
-        public func vtabOnConflict() -> Conflict {
-            return Conflict(rawValue: sqlite3_vtab_on_conflict(db))!
-        }
-        
-        @available(OSX 10.14, iOS 12.0, *)
-        public func vtabOnChange() -> Bool {
-            return sqlite3_vtab_nochange(db) != 0
         }
         
         @available(OSX 10.12, iOS 10.0, *)
