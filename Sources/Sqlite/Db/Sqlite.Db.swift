@@ -148,6 +148,19 @@ extension Sqlite {
             self.db = db
         }
         
+        public func close() throws {
+            try checkResult(sqlite3_close_v2(db))
+        }
+        
+        public func exec(
+            _ sql: String,
+            callback: @escaping sqlite3_callback = { _, _, _, _ in return SQLITE_OK },
+            userData: UnsafeMutableRawPointer? = nil,
+            errmsg: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>? = nil
+        ) throws {
+            return try checkResult(sqlite3_exec(db, sql, callback, userData, errmsg))
+        }
+        
         /**
          数据库连接配置
          */
@@ -387,8 +400,16 @@ extension Sqlite {
             }
         }
         
+        public func status(_ op: DbStatus, reset: Bool = false) throws -> (current: Int32, highwater: Int32) {
+            var current: Int32 = 0
+            var highwater: Int32 = 0
+            let result = sqlite3_db_status(db, op.rawValue, &current, &highwater, reset ? 1 : 0)
+            try checkResult(result)
+            return (current, highwater)
+        }
+        
         deinit {
-            sqlite3_close(db)
+            sqlite3_close_v2(db)
         }
     }
 }
