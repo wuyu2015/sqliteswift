@@ -433,10 +433,10 @@ extension Sqlite {
         }
         
         @available(OSX 10.14, iOS 12.0, *)
-        public func serialize(_ schema: String, flags: Deserialize = []) -> Data? {
+        public func serialize(_ schema: String, flags: UInt32) -> Data? {
             var size: sqlite3_int64 = 0
             let cSchema = schema.cString(using: .utf8)
-            guard let serializedDataPointer = sqlite3_serialize(db, cSchema, &size, flags.rawValue) else {
+            guard let serializedDataPointer = sqlite3_serialize(db, cSchema, &size, flags) else {
                 return nil
             }
             let serializedData = Data(bytes: serializedDataPointer, count: Int(size))
@@ -445,10 +445,10 @@ extension Sqlite {
         }
         
         @available(OSX 10.14, iOS 12.0, *)
-        public func deserialize(_ schema: String, data: Data, flags: UInt32 = 0) throws {
+        public func deserialize(_ schema: String, data: Data, flags: Deserialize = []) throws {
             let cSchema = schema.cString(using: .utf8)
             var dataPointer = [UInt8](data)
-            try checkResult(sqlite3_deserialize(db, cSchema, &dataPointer, Int64(data.count), 0, flags))
+            try checkResult(sqlite3_deserialize(db, cSchema, &dataPointer, Int64(data.count), 0, flags.rawValue))
         }
         
         deinit {
