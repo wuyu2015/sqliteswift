@@ -162,4 +162,20 @@ public enum Sqlite {
     public static func resultPointer(_ context: OpaquePointer!, _ value: UnsafeMutableRawPointer!, _ typeId: UnsafePointer<Int8>!, _ destructor: (@convention(c) (UnsafeMutableRawPointer?) -> Void)!) {
         sqlite3_result_pointer(context, value, typeId, destructor)
     }
+    
+    public static func status(_ op: Status, reset: Bool = false) throws -> (current: Int64, highwater: Int64) {
+        if #available(macOS 10.11, *) {
+            var current: Int64 = 0
+            var highwater: Int64 = 0
+            let result = sqlite3_status64(op.rawValue, &current, &highwater, reset ? 1 : 0)
+            try checkResult(result)
+            return (current, highwater)
+        } else {
+            var current: Int32 = 0
+            var highwater: Int32 = 0
+            let result = sqlite3_status(op.rawValue, &current, &highwater, reset ? 1 : 0)
+            try checkResult(result)
+            return (Int64(current), Int64(highwater))
+        }
+    }
 }
