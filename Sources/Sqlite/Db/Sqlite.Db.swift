@@ -1,3 +1,4 @@
+import Foundation
 import SqliteWrapper
 
 extension Sqlite {
@@ -429,6 +430,25 @@ extension Sqlite {
         @available(OSX 10.12, iOS 10.0, *)
         public func cacheFlush() throws {
             return try checkResult(sqlite3_db_cacheflush(db))
+        }
+        
+        @available(OSX 10.14, iOS 12.0, *)
+        public func serialize(_ schema: String, flags: Deserialize = []) -> Data? {
+            var size: sqlite3_int64 = 0
+            let cSchema = schema.cString(using: .utf8)
+            guard let serializedDataPointer = sqlite3_serialize(db, cSchema, &size, flags.rawValue) else {
+                return nil
+            }
+            let serializedData = Data(bytes: serializedDataPointer, count: Int(size))
+            sqlite3_free(serializedDataPointer)
+            return serializedData
+        }
+        
+        @available(OSX 10.14, iOS 12.0, *)
+        public func deserialize(_ schema: String, data: Data, flags: UInt32 = 0) throws {
+            let cSchema = schema.cString(using: .utf8)
+            var dataPointer = [UInt8](data)
+            try checkResult(sqlite3_deserialize(db, cSchema, &dataPointer, Int64(data.count), 0, flags))
         }
         
         deinit {
