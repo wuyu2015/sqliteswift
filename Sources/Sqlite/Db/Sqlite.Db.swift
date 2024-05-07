@@ -149,7 +149,11 @@ extension Sqlite {
         }
         
         public func close() throws {
-            try checkResult(sqlite3_close_v2(db))
+            if #available(iOS 8.2, *) {
+                try checkResult(sqlite3_close_v2(db))
+            } else {
+                try checkResult(sqlite3_close(db))
+            }
         }
         
         public func exec(
@@ -408,8 +412,26 @@ extension Sqlite {
             return (current, highwater)
         }
         
+        public func vtabOnConflict() -> Conflict {
+            return Conflict(rawValue: sqlite3_vtab_on_conflict(db))!
+        }
+        
+        @available(OSX 10.14, iOS 12.0, *)
+        public func vtabOnChange() -> Bool {
+            return sqlite3_vtab_nochange(db) != 0
+        }
+        
+        @available(OSX 10.12, iOS 10.0, *)
+        public func cacheFlush() throws {
+            return try checkResult(sqlite3_db_cacheflush(db))
+        }
+        
         deinit {
-            sqlite3_close_v2(db)
+            if #available(iOS 8.2, *) {
+                sqlite3_close_v2(db)
+            } else {
+                sqlite3_close(db)
+            }
         }
     }
 }

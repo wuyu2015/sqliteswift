@@ -211,6 +211,14 @@ final class SqliteEnumTests: XCTestCase {
         XCTAssertEqual(Sqlite.StmtStatus.RUN.rawValue, SQLITE_STMTSTATUS_RUN)
         XCTAssertEqual(Sqlite.StmtStatus.MEMUSED.rawValue, SQLITE_STMTSTATUS_MEMUSED)
     }
+    
+    func testConfilict() {
+        XCTAssertEqual(Sqlite.Conflict.ROLLBACK.rawValue, SQLITE_ROLLBACK)
+        XCTAssertEqual(Sqlite.Conflict.ABORT.rawValue, SQLITE_ABORT)
+        XCTAssertEqual(Sqlite.Conflict.FAIL.rawValue, SQLITE_FAIL)
+        XCTAssertEqual(Sqlite.Conflict.IGNORE.rawValue, SQLITE_IGNORE)
+        XCTAssertEqual(Sqlite.Conflict.REPLACE.rawValue, SQLITE_REPLACE)
+    }
 
     static var allTests = [
         ("testConfig", testConfig),
@@ -223,5 +231,6 @@ final class SqliteEnumTests: XCTestCase {
         ("testDbStatus", testDbStatus),
         ("testStatus", testStatus),
         ("testStmtStatus", testStmtStatus),
+        ("testConfilict", testConfilict),
     ]
 }

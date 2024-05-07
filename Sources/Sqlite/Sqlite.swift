@@ -164,7 +164,7 @@ public enum Sqlite {
     }
     
     public static func status(_ op: Status, reset: Bool = false) throws -> (current: Int64, highwater: Int64) {
-        if #available(macOS 10.11, *) {
+        if #available(macOS 10.11, iOS 9.0, *) {
             var current: Int64 = 0
             var highwater: Int64 = 0
             let result = sqlite3_status64(op.rawValue, &current, &highwater, reset ? 1 : 0)
