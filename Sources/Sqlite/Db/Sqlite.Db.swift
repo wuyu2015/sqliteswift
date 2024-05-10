@@ -42,16 +42,16 @@ extension Sqlite {
          这个函数返回最近一次在指定数据库连接上完成的 INSERT、UPDATE 或 DELETE语句修改、插入或删除的行数。
          执行其他类型的 SQL 语句不会修改该函数返回的值。
          */
-        public var changes: Int32 {
-            return sqlite3_changes(db)
+        public var changes: Int {
+            return Int(sqlite3_changes(db))
         }
         
         /**
          此函数返回自数据库连接打开以来完成的所有 INSERT、UPDATE 或 DELETE 语句插入、修改或删除的总行数，包括作为触发器程序的一部分执行的行为。
          执行其他类型的 SQL 语句不会影响 totalChanges() 返回的值。
          */
-        public var totalChanges: Int32 {
-            return sqlite3_total_changes(db)
+        public var totalChanges: Int {
+            return Int(sqlite3_total_changes(db))
         }
         
         /**
@@ -151,10 +151,11 @@ extension Sqlite {
 
          另请参阅：[sqlite3_temp_directory]
          */
-        init(path: String = ":memory:", flags: OpenFlag = [.READWRITE, .CREATE]) {
+        init(path: String = ":memory:", flags: OpenFlag = [.READWRITE, .CREATE]) throws {
             var dbPointer: OpaquePointer?
-            guard sqlite3_open_v2(path, &dbPointer, flags.rawValue, nil) == SQLITE_OK else {
-                fatalError("Failed to open database.")
+            let result = sqlite3_open_v2(path, &dbPointer, flags.rawValue, nil)
+            guard result == SQLITE_OK, dbPointer != nil else {
+                throw ErrorCode(rawValue: result)
             }
             db = dbPointer!
         }
@@ -171,6 +172,32 @@ extension Sqlite {
             }
         }
         
+        /*
+         CAPI3REF: 一步执行查询接口
+         方法：sqlite3
+
+         sqlite3_exec() 接口是围绕 [sqlite3_prepare_v2()]、[sqlite3_step()] 和 [sqlite3_finalize()] 的一个便捷封装，允许应用程序运行多个SQL语句而无需使用大量的C代码。
+
+         ^sqlite3_exec() 接口在传入的第二个参数中运行零个或多个UTF-8编码、以分号分隔的SQL语句，在传入的第一个参数中指定的[数据库连接]的上下文中运行。^如果sqlite3_exec() 的第三个参数的回调函数不是 NULL，则对于每个从评估的SQL语句中输出的结果行，都会调用它。^sqlite3_exec() 的第四个参数被传递给每次回调调用的第一个参数。^如果sqlite3_exec() 的回调指针是 NULL，则永远不会调用回调，且结果行将被忽略。
+
+         ^如果在评估传入 sqlite3_exec() 的SQL语句时发生错误，则当前语句的执行会停止，并跳过后续语句。^如果 sqlite3_exec() 的第五个参数不是 NULL，则任何错误消息都会写入从 [sqlite3_malloc()] 获得的内存中，并通过第五个参数传回。为避免内存泄漏，应用程序应在不再需要通过 sqlite3_exec() 的第五个参数返回的错误消息字符串时，调用 [sqlite3_free()]。^如果 sqlite3_exec() 的第五个参数不是 NULL，并且没有发生错误，则在返回之前，sqlite3_exec() 将把其第五个参数设置为 NULL。
+
+         ^如果 sqlite3_exec() 的回调返回非零值，则 sqlite3_exec() 函数将返回 SQLITE_ABORT，不再调用回调，也不执行后续的SQL语句。
+
+         ^sqlite3_exec() 回调函数的第二个参数是结果中的列数。^sqlite3_exec() 的回调的第三个参数是一个字符串指针数组，每个指针指向一个列的数据，就像从 [sqlite3_column_text()] 获取的一样。^如果结果行的某个元素为 NULL，则 sqlite3_exec() 的回调函数的相应字符串指针为 NULL。^sqlite3_exec() 的回调的第四个参数是一个字符串指针数组，其中每个条目表示从 [sqlite3_column_name()] 获取的相应结果列的名称。
+
+         ^如果 sqlite3_exec() 的第二个参数是 NULL指针、空字符串，或者只包含空格和/或SQL注释的指针，则不会评估任何SQL语句，数据库也不会更改。
+
+         限制：
+         <ul>
+         <li> 应用程序必须确保 sqlite3_exec() 的第一个参数是有效且打开的[数据库连接]。
+         <li> 在 sqlite3_exec() 运行时，应用程序不得关闭 sqlite3_exec() 正在使用的[数据库连接]。
+         <li> 在 sqlite3_exec() 运行时，应用程序不得修改传递给 sqlite3_exec() 的第二个参数的SQL语句文本。
+         </ul>
+         
+         对于sqlite3_exec()函数，第四个参数是传递给回调函数的第一个参数。这个参数是一个void *类型的指针，可以用来传递任意类型的数据给回调函数。
+         sqlite3_exec()函数的第五个参数是用于接收错误消息的指针。如果在执行SQL语句时发生错误，错误消息将被写入内存中，并通过这个参数返回。如果没有发生错误或者第五个参数为NULL，则此参数不起作用。
+        */
         public func exec(
             _ sql: String,
             callback: @escaping sqlite3_callback = { _, _, _, _ in return SQLITE_OK },
@@ -236,7 +263,11 @@ extension Sqlite {
          P 是上下文指针，它会被传递给回调函数。
          */
         @available(OSX 10.12, iOS 12.0, *)
-        public func trace(_ uMask: UInt32, _ xCallback: (@convention(c) (UInt32, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Int32)!, _ pCtx: UnsafeMutableRawPointer!) -> Int32 {
+        public func trace(
+            _ uMask: UInt32,
+            _ xCallback: (@convention(c) (UInt32, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Int32)!,
+            _ pCtx: UnsafeMutableRawPointer!
+        ) -> Int32 {
             return sqlite3_trace_v2(db, uMask, xCallback, pCtx)
         }
         
@@ -271,16 +302,16 @@ extension Sqlite {
         */
         public func prepare(sql: String, flags: PrepareFlag = [], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt? {
             var stmt: OpaquePointer?
-            var rc: Int32
+            var result: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
-                rc = sqlite3_prepare_v3(db, sql, -1, UInt32(flags.rawValue), &stmt, tail)
+                result = sqlite3_prepare_v3(db, sql, -1, UInt32(flags.rawValue), &stmt, tail)
             } else {
-                rc = sql.withCString { cString in
+                result = sql.withCString { cString in
                     sqlite3_prepare_v2(db, cString, -1, &stmt, nil)
                 }
             }
-            guard rc == SQLITE_OK else {
-                throw ErrorCode(rawValue: rc)
+            guard result == SQLITE_OK else {
+                throw ErrorCode(rawValue: result)
             }
             return Stmt(stmt!)
         }
@@ -335,7 +366,7 @@ extension Sqlite {
         }
         
         @available(OSX 10.8, *)
-        public func readOnly(dbName: String) throws -> Bool {
+        public func readOnly(dbName: String? = nil) throws -> Bool {
             let result = sqlite3_db_readonly(db, dbName)
             guard result != -1 else {
                 throw DbError.dbNotFound
