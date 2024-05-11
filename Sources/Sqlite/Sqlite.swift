@@ -7,6 +7,8 @@ public enum Sqlite {
         }
     }
     
+    public typealias Connection = OpaquePointer
+    
     // 如: 3.28.0
     public static let version: String = SQLITE_VERSION
     
@@ -50,8 +52,25 @@ public enum Sqlite {
         }
     }
     
-    public static func sleep(_ ms: Int) throws {
-        try checkResult(sqlite3_sleep(Int32(ms)))
+    public static func open(path: String = ":memory:", flags: OpenFlag = [.READWRITE, .CREATE]) throws -> Connection {
+        var dbPointer: Connection?
+        let result = sqlite3_open_v2(path, &dbPointer, flags.rawValue, nil)
+        guard result == SQLITE_OK, dbPointer != nil else {
+            if #available(iOS 8.2, *) {
+                sqlite3_close_v2(dbPointer)
+            } else {
+                sqlite3_close(dbPointer)
+            }
+            throw ErrorCode(rawValue: result)
+        }
+        guard let dbPointer else {
+            throw ErrorCode.ERROR
+        }
+        return dbPointer
+    }
+    
+    public static func sleep(_ ms: Int32) throws {
+        try checkResult(sqlite3_sleep(ms))
     }
     
     @available(OSX 10.8, *)
@@ -153,7 +172,7 @@ public enum Sqlite {
 
     /// 将应用程序定义函数的结果设置为包含所有零字节且大小为 N 字节的 BLOB。
     @available(OSX 10.12, iOS 10.0, *)
-    public static func resultZeroBlob64(_ context: OpaquePointer!, _ length: sqlite3_uint64) -> Int32 {
+    public static func resultZeroBlob64(_ context: OpaquePointer!, _ length: UInt64) -> Int32 {
         return sqlite3_result_zeroblob64(context, length)
     }
 

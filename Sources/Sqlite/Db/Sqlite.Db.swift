@@ -3,7 +3,7 @@ import SqliteWrapper
 
 extension Sqlite {
     public class Db {
-        public let db: OpaquePointer!
+        public let db: Connection!
         
         private func checkResult(_ result: Int32) throws {
             guard result == SQLITE_OK else {
@@ -42,16 +42,16 @@ extension Sqlite {
          这个函数返回最近一次在指定数据库连接上完成的 INSERT、UPDATE 或 DELETE语句修改、插入或删除的行数。
          执行其他类型的 SQL 语句不会修改该函数返回的值。
          */
-        public var changes: Int {
-            return Int(sqlite3_changes(db))
+        public var changes: Int32 {
+            return sqlite3_changes(db)
         }
         
         /**
          此函数返回自数据库连接打开以来完成的所有 INSERT、UPDATE 或 DELETE 语句插入、修改或删除的总行数，包括作为触发器程序的一部分执行的行为。
          执行其他类型的 SQL 语句不会影响 totalChanges() 返回的值。
          */
-        public var totalChanges: Int {
-            return Int(sqlite3_total_changes(db))
+        public var totalChanges: Int32 {
+            return sqlite3_total_changes(db)
         }
         
         /**
@@ -152,15 +152,10 @@ extension Sqlite {
          另请参阅：[sqlite3_temp_directory]
          */
         init(path: String = ":memory:", flags: OpenFlag = [.READWRITE, .CREATE]) throws {
-            var dbPointer: OpaquePointer?
-            let result = sqlite3_open_v2(path, &dbPointer, flags.rawValue, nil)
-            guard result == SQLITE_OK, dbPointer != nil else {
-                throw ErrorCode(rawValue: result)
-            }
-            db = dbPointer!
+            db = try open(path: path, flags: flags)
         }
         
-        init(db: OpaquePointer!) {
+        init(db: Connection!) {
             self.db = db
         }
         
@@ -282,8 +277,6 @@ extension Sqlite {
             sqlite3_progress_handler(db, numberOfInstructions, callback, context)
         }
         
-        
-        
         public func setLimit(_ limit: Limit, _ newVal: Int32) throws {
             try checkResult(sqlite3_limit(db, limit.rawValue, newVal))
         }
@@ -300,7 +293,7 @@ extension Sqlite {
          
          - Returns: 准备好的 SQLite 语句对象。
         */
-        public func prepare(sql: String, flags: PrepareFlag = [], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt? {
+        public func prepare(sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt? {
             var stmt: OpaquePointer?
             var result: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
@@ -310,10 +303,11 @@ extension Sqlite {
                     sqlite3_prepare_v2(db, cString, -1, &stmt, nil)
                 }
             }
-            guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+            try checkResult(result)
+            guard let stmt else {
+                throw ErrorCode.ERROR
             }
-            return Stmt(stmt!)
+            return Stmt(stmt)
         }
         
         /**

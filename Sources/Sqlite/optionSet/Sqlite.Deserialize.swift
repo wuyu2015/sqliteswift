@@ -8,8 +8,8 @@ extension Sqlite {
             self.rawValue = rawValue
         }
         
-        static let FREEONCLOSE = OpenFlag(rawValue: SQLITE_DESERIALIZE_FREEONCLOSE)
-        static let RESIZEABLE = OpenFlag(rawValue: SQLITE_DESERIALIZE_RESIZEABLE)
-        static let READONLY = OpenFlag(rawValue: SQLITE_DESERIALIZE_READONLY)
+        public static let FREEONCLOSE = OpenFlag(rawValue: SQLITE_DESERIALIZE_FREEONCLOSE)
+        public static let RESIZEABLE = OpenFlag(rawValue: SQLITE_DESERIALIZE_RESIZEABLE)
+        public static let READONLY = OpenFlag(rawValue: SQLITE_DESERIALIZE_READONLY)
     }
 }
