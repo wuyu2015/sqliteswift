@@ -94,6 +94,18 @@ extension Sqlite {
             return sqlite3_system_errno(db)
         }
         
+        private lazy var beginStmt: Stmt = {
+            return try! prepare("BEGIN;")
+        }()
+        
+        private lazy var commitStmt: Stmt = {
+            return try! prepare("COMMIT;")
+        }()
+        
+        private lazy var rollbackStmt: Stmt = {
+            return try! prepare("ROLLBACK;")
+        }()
+        
         /**
          打开一个新的数据库连接
          
@@ -506,6 +518,21 @@ extension Sqlite {
             let cSchema = schema.cString(using: .utf8)
             var dataPointer = [UInt8](data)
             try checkResult(sqlite3_deserialize(db, cSchema, &dataPointer, Int64(data.count), 0, flags.rawValue))
+        }
+        
+        @discardableResult
+        public func begin() throws -> Bool {
+            return try beginStmt.step()
+        }
+        
+        @discardableResult
+        public func commit() throws -> Bool {
+            return try commitStmt.step()
+        }
+        
+        @discardableResult
+        public func rollback() throws -> Bool {
+            return try rollbackStmt.step()
         }
         
         deinit {
