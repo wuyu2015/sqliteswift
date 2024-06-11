@@ -361,9 +361,9 @@ extension Sqlite {
                         } else if i == 1 {
                             // 2nd 0.2ms
                             usleep(200)
-                        } else if i < 15 {
-                            // 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024(1s), 2048(2s)
-                            usleep(useconds_t(500.0 * pow(2.0, Double(i - 2))))
+                        } else if i <= 8 {
+                            // 0.5ms, 2ms, 8ms, 32ms, 128ms, 512ms, 2048ms(2s)
+                            usleep(useconds_t(500.0 * pow(4.0, Double(i - 2))))
                         } else {
                             // 3s ...
                             usleep(3000000)
