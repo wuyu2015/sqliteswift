@@ -2,10 +2,23 @@ import Foundation
 import SQLite3
 
 extension Sqlite {
-    public struct Stmt {
+    public class Stmt {
         public let stmt: OpaquePointer
-        public var db: Db?
-        var bindIndex: Int32 = 0
+        public let db: Db
+        public let bindParameterCount: Int32
+        public let columnCount: Int32
+        public let columns: [String]
+        public let columnMap: [String: Int32]
+        public private(set) var useCount: Int = 0
+        public private(set) var successCount: Int = 0
+        public private(set) var busyCount: Int = 0
+        
+        /**
+         返回与准备语句关联的原f始 SQL 字符串，如果语句无效或没有关联的 SQL 字符串则返回 nil。
+        */
+        public lazy var sql: String = {
+            return String(cString: sqlite3_sql(stmt))
+        }()
         
         /**
          返回一个布尔值，指示 stmt 是否为只读。
@@ -16,9 +29,9 @@ extension Sqlite {
          [ATTACH] 和 [DETACH] 语句也会导致 sqlite3_stmt_readonly 返回 true，因为它们虽然会改变数据库连接的配置，但不会修改数据库文件的内容。
          对于 [BEGIN] 语句，sqlite3_stmt_readonly 返回 true，因为 [BEGIN] 只是设置内部标志。但是，[BEGIN IMMEDIATE] 和 [BEGIN EXCLUSIVE] 命令会触及数据库，因此 sqlite3_stmt_readonly 对于这些命令返回 false。
          */
-        public var isReadOnly: Bool {
+        public lazy var isReadOnly: Bool = {
             return sqlite3_stmt_readonly(stmt) != 0
-        }
+        }()
         
         /**
          返回一个布尔值，指示 stmt 是否是 EXPLAIN 查询。
@@ -52,23 +65,27 @@ extension Sqlite {
             return sqlite3_stmt_busy(stmt) != 0
         }
         
-        public var bingParameterCount: Int32 {
-            return sqlite3_bind_parameter_count(stmt)
-        }
-        
-        public var columnCount: Int32 {
-            return sqlite3_column_count(stmt)
-        }
-        
         public var dataCount: Int32 {
             return sqlite3_data_count(stmt)
         }
         
         init(_ pStmt: OpaquePointer, db: Db? = nil) {
             stmt = pStmt
-            self.db = db
+            self.db = db ?? Db(db: sqlite3_db_handle(stmt))
+            bindParameterCount = sqlite3_bind_parameter_count(stmt)
+            var map: [String: Int32] = [:]
+            var arr: [String] = []
+            columnCount = sqlite3_column_count(stmt)
+            for index in 0 ..< columnCount {
+                let columnName = String(cString: sqlite3_column_name(stmt, index))
+                arr.append(columnName)
+                map[columnName] = index
+            }
+            columns = arr
+            columnMap = map
         }
         
+        @discardableResult
         private func checkResult(_ result: Int32) throws -> Self {
             guard result == SQLITE_OK else {
                 throw ErrorCode(rawValue: result)
@@ -76,83 +93,63 @@ extension Sqlite {
             return self
         }
         
-        private mutating func updateBindIndex(_ index: Int) -> Int32 {
-            bindIndex = index > 0 ? Int32(index) : bindIndex + 1
-            return bindIndex
+        public func bind(_ value: Int, index: Int32) throws {
+            try checkResult(sqlite3_bind_int64(stmt, index, Int64(value)))
         }
         
-        /**
-         返回与准备语句关联的原f始 SQL 字符串。
-         
-         - Returns: 与 stmt 关联的原始 SQL 字符串，如果语句无效或没有关联的 SQL 字符串则返回 nil。
-        */
-        public func sql() -> String? {
-            guard let cString = sqlite3_sql(stmt) else {
-                return nil
-            }
-            return String(cString: cString)
+        public func bind(_ value: UInt64, index: Int32) throws {
+            try checkResult(sqlite3_bind_int64(stmt, index, sqlite3_int64(value)))
         }
         
-        public mutating func bind(_ value: Int, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, updateBindIndex(index), Int64(value)))
+        public func bind(_ value: Int64, index: Int32) throws {
+            try checkResult(sqlite3_bind_int64(stmt, index, value))
         }
         
-        public mutating func bind(_ value: UInt64, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, updateBindIndex(index), sqlite3_int64(value)))
+        public func bind(_ value: UInt32, index: Int32) throws {
+            try checkResult(sqlite3_bind_int64(stmt, index, Int64(value)))
         }
         
-        public mutating func bind(_ value: Int64, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, updateBindIndex(index), value))
+        public func bind(_ value: Int32, index: Int32) throws {
+            try checkResult(sqlite3_bind_int(stmt, index, value))
         }
         
-        public mutating func bind(_ value: UInt32, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, updateBindIndex(index), Int64(value)))
+        public func bind(_ value: Float, index: Int32) throws {
+            try checkResult(sqlite3_bind_double(stmt, index, Double(value)))
         }
         
-        public mutating func bind(_ value: Int32, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_int(stmt, updateBindIndex(index), value))
+        public func bind(_ value: Double, index: Int32) throws {
+            try checkResult(sqlite3_bind_double(stmt, index, value))
         }
         
-        public mutating func bind(_ value: Float, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_double(stmt, updateBindIndex(index), Double(value)))
+        public func bind(_ value: String, index: Int32) throws {
+            try checkResult(sqlite3_bind_text(stmt, index, strdup(value), -1, { free($0) }))
         }
         
-        public mutating func bind(_ value: Double, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_double(stmt, updateBindIndex(index), value))
+        public func bind(_ cString: UnsafePointer<Int8>, index: Int32) throws {
+            try checkResult(sqlite3_bind_text(stmt, index, cString, -1, { free($0) }))
         }
         
-        public mutating func bind(_ value: String, index: Int = 0) throws -> Self {
-            let cString = value.withCString { (ptr: UnsafePointer<Int8>) -> UnsafePointer<Int8> in
-                return ptr
-            }
-            return try checkResult(sqlite3_bind_text(stmt, updateBindIndex(index), cString, -1, nil))
-        }
-        
-        public mutating func bind(_ cString: UnsafePointer<Int8>, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_text(stmt, updateBindIndex(index), cString, -1, nil))
-        }
-        
-        public mutating func bind(_ data: [UInt8], index: Int = 0) throws -> Self {
-            return try checkResult(
+        public func bind(_ data: [UInt8], index: Int32) throws {
+            try checkResult(
                 data.count <= Int(Int32.max)
-                    ? sqlite3_bind_blob(stmt, updateBindIndex(index), data, Int32(data.count), nil)
-                    : sqlite3_bind_blob64(stmt, updateBindIndex(index), data, UInt64(data.count), nil)
+                    ? sqlite3_bind_blob(stmt, index, data, Int32(data.count), nil)
+                    : sqlite3_bind_blob64(stmt, index, data, UInt64(data.count), nil)
             )
         }
         
-        public mutating func bind(_ pointer: OpaquePointer!, index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_value(stmt, updateBindIndex(index), pointer))
+        public func bind(_ pointer: OpaquePointer!, index: Int32) throws {
+            try checkResult(sqlite3_bind_value(stmt, index, pointer))
         }
         
-        public mutating func bindNull(index: Int = 0) throws -> Self {
-            return try checkResult(sqlite3_bind_null(stmt, updateBindIndex(index)))
+        public func bindNull(index: Int32 = 0) throws {
+            try checkResult(sqlite3_bind_null(stmt, index))
         }
         
-        public mutating func bindZeroBlob(index: Int = 0, length: Int) throws -> Self {
+        public func bindZeroBlob(index: Int32 = 0, length: Int) throws {
             if #available(OSX 10.12, iOS 10.0, *) {
-                return try checkResult(sqlite3_bind_zeroblob64(stmt, updateBindIndex(index), sqlite3_uint64(length)))
+                try checkResult(sqlite3_bind_zeroblob64(stmt, index, sqlite3_uint64(length)))
             } else {
-                return try checkResult(sqlite3_bind_zeroblob(stmt, updateBindIndex(index), Int32(length)))
+                try checkResult(sqlite3_bind_zeroblob(stmt, index, Int32(length)))
             }
         }
         
@@ -192,8 +189,7 @@ extension Sqlite {
             return sqlite3_bind_parameter_index(stmt, name.withCString { $0 })
         }
         
-        public mutating func clearBinding() throws -> Self {
-            bindIndex = 0
+        public func clearBinding() throws -> Self {
             return try checkResult(sqlite3_clear_bindings(stmt))
         }
         
@@ -270,18 +266,108 @@ extension Sqlite {
          - Throws: 如果执行过程中出现错误，抛出异常。
          */
         public func step() throws -> Bool {
+            useCount += 1
+            db.useCount += 1
             let result = sqlite3_step(stmt)
             switch result {
             case SQLITE_ROW:
+                successCount += 1
+                db.successCount += 1
                 return true
             case SQLITE_DONE:
+                successCount += 1
+                db.successCount += 1
                 return false
+            case SQLITE_BUSY:
+                busyCount += 1
+                db.busyCount += 1
+                var retry = 0
+                while(retry < db.busyRetryMax) {
+                    switch sqlite3_step(stmt) {
+                    case SQLITE_ROW:
+                        successCount += 1
+                        db.successCount += 1
+                        return true
+                    case SQLITE_DONE:
+                        successCount += 1
+                        db.successCount += 1
+                        return false
+                    case SQLITE_BUSY:
+                        busyCount += 1
+                        db.busyCount += 1
+                        retry += 1
+                        usleep(20)
+                    default:
+                        throw ErrorCode(rawValue: result)
+                    }
+                }
+                throw ErrorCode(rawValue: SQLITE_BUSY)
             default:
                 throw ErrorCode(rawValue: result)
             }
         }
         
-        public func columnBlob(index: Int32) -> Data? {
+        public func columnIndex(_ name: String) -> Int32? {
+            return columnMap[name]
+        }
+        
+        public func int(index: Int32) -> Int32 {
+            guard index >= 0 && index < columnCount else {
+                return -1
+            }
+            return sqlite3_column_int(stmt, index)
+        }
+        
+        public func int(name: String) -> Int32 {
+            guard let index = columnIndex(name) else {
+                return -1
+            }
+            return sqlite3_column_int(stmt, index)
+        }
+        
+        public func int64(index: Int32) -> Int64 {
+            guard index >= 0 && index < columnCount else {
+                return -1
+            }
+            return sqlite3_column_int64(stmt, index)
+        }
+        
+        public func int64(name: String) -> Int64 {
+            guard let index = columnIndex(name) else {
+                return -1
+            }
+            return sqlite3_column_int64(stmt, index)
+        }
+        
+        public func double(index: Int32) -> Double {
+            guard index >= 0 && index < columnCount else {
+                return -1.0
+            }
+            return sqlite3_column_double(stmt, index)
+        }
+        
+        public func double(name: String) -> Double {
+            guard let index = columnIndex(name) else {
+                return -1.0
+            }
+            return sqlite3_column_double(stmt, index)
+        }
+        
+        public func string(index: Int32) -> String {
+            guard let textPointer = sqlite3_column_text(stmt, index) else {
+                return ""
+            }
+            return String(cString: textPointer)
+        }
+        
+        public func string(name: String) -> String {
+            guard let index = columnIndex(name) else {
+                return ""
+            }
+            return string(index: index)
+        }
+        
+        public func blob(index: Int32) -> Data? {
             guard let pointer = sqlite3_column_blob(stmt, index) else {
                 return nil
             }
@@ -289,30 +375,25 @@ extension Sqlite {
             return Data(bytes: pointer, count: length)
         }
         
-        public func columnDouble(index: Int32) -> Double {
-            return sqlite3_column_double(stmt, index)
-        }
-        
-        public func columnInt(index: Int32) -> Int32 {
-            return sqlite3_column_int(stmt, index)
-        }
-        
-        public func columnInt64(index: Int32) -> Int64 {
-            return sqlite3_column_int64(stmt, index)
-        }
-        
-        public func columnText(index: Int32) -> String {
-            guard let textPointer = sqlite3_column_text(stmt, index) else {
-                return ""
+        public func blob(name: String) -> Data? {
+            guard let index = columnIndex(name) else {
+                return nil
             }
-            return String(cString: textPointer)
+            return blob(index: index)
         }
         
-        public func columnValue(index: Int32) -> OpaquePointer? {
+        public func value(index: Int32) -> OpaquePointer? {
             guard let valuePointer = sqlite3_column_value(stmt, index) else {
                 return nil
             }
             return valuePointer
+        }
+        
+        public func value(name: String) -> OpaquePointer? {
+            guard let index = columnIndex(name) else {
+                return nil
+            }
+            return value(index: index)
         }
         
         // sqlite3_column_type() 的返回值可以用来决定应该使用哪个接口来提取列的值。
@@ -328,7 +409,7 @@ extension Sqlite {
          */
         public func finalize() throws {
             let result = sqlite3_finalize(stmt)
-            if result == SQLITE_OK {
+            guard result == SQLITE_OK else {
                 throw ErrorCode(rawValue: result)
             }
         }
@@ -346,17 +427,12 @@ extension Sqlite {
             }
         }
         
-        // 返回与预处理语句相关的数据库连接句柄
-        public mutating func dbHandle() -> Db {
-            if let db = db {
-                return db
-            }
-            db = Db(db: sqlite3_db_handle(stmt))
-            return db!
-        }
-        
         public func status(_ op: StmtStatus, reset: Bool = false) -> Int32 {
             return sqlite3_stmt_status(stmt, op.rawValue, reset ? 1 : 0)
+        }
+        
+        deinit {
+            try? finalize()
         }
     }
 }

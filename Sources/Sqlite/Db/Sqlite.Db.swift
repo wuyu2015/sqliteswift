@@ -4,6 +4,10 @@ import SqliteWrapper
 extension Sqlite {
     public class Db {
         public let db: Connection!
+        public var busyRetryMax: Int = 10
+        public internal(set) var useCount: Int = 0
+        public internal(set) var successCount: Int = 0
+        public internal(set) var busyCount: Int = 0
         
         private func checkResult(_ result: Int32) throws {
             guard result == SQLITE_OK else {
@@ -199,6 +203,7 @@ extension Sqlite {
             userData: UnsafeMutableRawPointer? = nil,
             errmsg: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>? = nil
         ) throws {
+            useCount += 1
             return try checkResult(sqlite3_exec(db, sql, callback, userData, errmsg))
         }
         
@@ -293,7 +298,7 @@ extension Sqlite {
          
          - Returns: 准备好的 SQLite 语句对象。
         */
-        public func prepare(sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt? {
+        public func prepare(_ sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt {
             var stmt: OpaquePointer?
             var result: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
@@ -307,7 +312,7 @@ extension Sqlite {
             guard let stmt else {
                 throw ErrorCode.ERROR
             }
-            return Stmt(stmt)
+            return Stmt(stmt, db: self)
         }
         
         /**
