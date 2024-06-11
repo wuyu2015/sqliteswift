@@ -106,6 +106,10 @@ extension Sqlite {
             return try! prepare("ROLLBACK;")
         }()
         
+        private lazy var vacuumStmt: Stmt = {
+            return try! prepare("VACUUM;")
+        }()
+        
         /**
          打开一个新的数据库连接
          
@@ -539,6 +543,11 @@ extension Sqlite {
         @discardableResult
         public func rollback() throws -> Bool {
             return try rollbackStmt.step()
+        }
+        
+        @discardableResult
+        public func vacuum() throws -> Bool {
+            return try vacuumStmt.step()
         }
         
         deinit {

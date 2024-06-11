@@ -55,6 +55,7 @@ final class SqliteStmtTests: XCTestCase {
         }
         print(arr)
         XCTAssertEqual(arr.count, 11)
+        try db.vacuum()
     }
     
     static var allTests = [
