@@ -11,6 +11,7 @@ final class SqliteStmtTests: XCTestCase {
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
         XCTAssertNil(insertStmt.bindParameterName(index: 6))
         try insertStmt.bind(["first", "number 0", 0, 0.1, 0.2])
+        try insertStmt.bind("second", "number 2", -1, 1.1, 1.2)
         try insertStmt.bind("hi", index: 1)
         try insertStmt.bind(1.1, index: 5)
         for i in 1...10 {

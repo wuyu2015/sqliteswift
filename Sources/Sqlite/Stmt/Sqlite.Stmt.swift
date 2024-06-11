@@ -185,6 +185,10 @@ extension Sqlite {
             }
         }
         
+        public func bind(_ values: Any...) throws {
+            try bind(values)
+        }
+        
         /**
          获取准备好的 SQL 语句中指定索引的参数名。
          
