@@ -30,6 +30,18 @@ extension Sqlite {
         return ThreadSafeLevel(rawValue: sqlite3_threadsafe())!
     }
     
+    public static var isThreadSafe: Bool {
+        return sqlite3_threadsafe() > 0
+    }
+    
+    public static var isSingleThreaded: Bool {
+        return sqlite3_threadsafe() == 1
+    }
+    
+    public static var isMultiThreaded: Bool {
+        return sqlite3_threadsafe() == 2
+    }
+    
     public static func config(_ option: DbConfig, _ params: CVarArg...) -> ErrorCode {
         return withVaList(params) { pointer in
             return ErrorCode(rawValue: sqliteWrapperConfig(option.rawValue, pointer))

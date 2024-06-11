@@ -2,11 +2,14 @@ import XCTest
 @testable import Sqlite
 
 final class SqliteTests: XCTestCase {
-    func test1() {
-        XCTAssertTrue(true)
+    func threadSafe() {
+        XCTAssertEqual(Sqlite.threadSafe, Sqlite.ThreadSafeLevel.multiThreaded)
+        XCTAssertTrue(Sqlite.isThreadSafe)
+        XCTAssertFalse(Sqlite.isSingleThreaded)
+        XCTAssertTrue(Sqlite.isMultiThreaded)
     }
 
     static var allTests = [
-        ("test1", test1),
+        ("threadSafe", threadSafe),
     ]
 }
