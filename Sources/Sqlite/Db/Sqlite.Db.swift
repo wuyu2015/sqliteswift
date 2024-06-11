@@ -163,11 +163,37 @@ extension Sqlite {
             self.db = db
         }
         
-        public func close() throws {
+        @discardableResult
+        public func close() -> Bool {
+            switch(_close()) {
+            case SQLITE_OK:
+                return true
+            case SQLITE_BUSY:
+                busyCount += 1
+                var retry = 0
+                while(retry < busyRetryMax) {
+                    switch _close() {
+                    case SQLITE_OK:
+                        return true
+                    case SQLITE_BUSY:
+                        busyCount += 1
+                        retry += 1
+                        usleep(20)
+                    default:
+                        return false
+                    }
+                }
+                return false
+            default:
+                return false
+            }
+        }
+        
+        private func _close() -> Int32 {
             if #available(iOS 8.2, *) {
-                try checkResult(sqlite3_close_v2(db))
+                return sqlite3_close_v2(db)
             } else {
-                try checkResult(sqlite3_close(db))
+                return sqlite3_close(db)
             }
         }
         
@@ -483,11 +509,7 @@ extension Sqlite {
         }
         
         deinit {
-            if #available(iOS 8.2, *) {
-                sqlite3_close_v2(db)
-            } else {
-                sqlite3_close(db)
-            }
+            close()
         }
     }
 }
