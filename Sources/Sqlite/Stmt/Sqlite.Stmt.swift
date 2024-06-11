@@ -366,7 +366,7 @@ extension Sqlite {
                             usleep(useconds_t(500.0 * pow(2.0, Double(i - 2))))
                         } else {
                             // 3s ...
-                            usleep(3000)
+                            usleep(3000000)
                         }
                     default:
                         throw ErrorCode(rawValue: result)
