@@ -358,7 +358,7 @@ extension Sqlite {
                         if i == 0 {
                             // 1st 0.02ms
                             usleep(20)
-                        } else if i == 0 {
+                        } else if i == 1 {
                             // 2nd 0.2ms
                             usleep(200)
                         } else if i < 15 {
