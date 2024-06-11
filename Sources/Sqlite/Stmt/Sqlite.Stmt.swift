@@ -354,8 +354,20 @@ extension Sqlite {
                     case SQLITE_BUSY, SQLITE_LOCKED:
                         busyCount += 1
                         db.busyCount += 1
-                        // 等待时间越来越长(毫秒)：0.02, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024(1s), 2048, 3s, 3s ...
-                        usleep(i == 0 ? 20 : useconds_t(min(3000.0, 500.0 * pow(2.0, Double(i - 1)))))
+                        // 等待时间越来越长(毫秒)
+                        if i == 0 {
+                            // 1st 0.02ms
+                            usleep(20)
+                        } else if i == 0 {
+                            // 2nd 0.2ms
+                            usleep(200)
+                        } else if i < 15 {
+                            // 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024(1s), 2048(2s)
+                            usleep(useconds_t(500.0 * pow(2.0, Double(i - 2))))
+                        } else {
+                            // 3s ...
+                            usleep(3000)
+                        }
                     default:
                         throw ErrorCode(rawValue: result)
                     }
