@@ -168,14 +168,14 @@ extension Sqlite {
             switch(_close()) {
             case SQLITE_OK:
                 return true
-            case SQLITE_BUSY:
+            case SQLITE_BUSY, SQLITE_LOCKED:
                 busyCount += 1
                 var retry = 0
                 while(retry < busyRetryMax) {
                     switch _close() {
                     case SQLITE_OK:
                         return true
-                    case SQLITE_BUSY:
+                    case SQLITE_BUSY, SQLITE_LOCKED:
                         busyCount += 1
                         retry += 1
                         usleep(20)

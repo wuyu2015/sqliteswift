@@ -313,12 +313,13 @@ extension Sqlite {
                 successCount += 1
                 db.successCount += 1
                 return false
-            case SQLITE_BUSY:
+            case SQLITE_BUSY, SQLITE_LOCKED:
                 busyCount += 1
                 db.busyCount += 1
                 var retry = 0
                 while(retry < db.busyRetryMax) {
-                    switch sqlite3_step(stmt) {
+                    let result = sqlite3_step(stmt)
+                    switch result {
                     case SQLITE_ROW:
                         successCount += 1
                         db.successCount += 1
@@ -328,7 +329,7 @@ extension Sqlite {
                         successCount += 1
                         db.successCount += 1
                         return false
-                    case SQLITE_BUSY:
+                    case SQLITE_BUSY, SQLITE_LOCKED:
                         busyCount += 1
                         db.busyCount += 1
                         retry += 1
@@ -337,7 +338,7 @@ extension Sqlite {
                         throw ErrorCode(rawValue: result)
                     }
                 }
-                throw ErrorCode(rawValue: SQLITE_BUSY)
+                throw ErrorCode(rawValue: result)
             default:
                 throw ErrorCode(rawValue: result)
             }
