@@ -321,7 +321,7 @@ extension Sqlite {
          - Returns: 如果成功找到一行数据返回 true，如果执行完毕返回 false。
          - Throws: 如果执行过程中出现错误，抛出异常。
          */
-        public func step() throws -> Bool {
+        public func step(retry: Int = 0) throws -> Bool {
             useCount += 1
             db.useCount += 1
             let result = sqlite3_step(stmt)
@@ -338,8 +338,8 @@ extension Sqlite {
             case SQLITE_BUSY, SQLITE_LOCKED:
                 busyCount += 1
                 db.busyCount += 1
-                var retry = 0
-                while(retry < db.busyRetryMax) {
+                // 当 retry 小于 0（如 -1），使用 db.busyRetryMax 代替
+                for i in 0..<(retry >= 0 ? retry : db.busyRetryMax) {
                     let result = sqlite3_step(stmt)
                     switch result {
                     case SQLITE_ROW:
@@ -354,8 +354,8 @@ extension Sqlite {
                     case SQLITE_BUSY, SQLITE_LOCKED:
                         busyCount += 1
                         db.busyCount += 1
-                        retry += 1
-                        usleep(20)
+                        // 等待时间越来越长(毫秒)：1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024(1s), 2048, 3s
+                        usleep(useconds_t(min(3000.0, 1000.0 * pow(2.0, Double(i)))))
                     default:
                         throw ErrorCode(rawValue: result)
                     }
