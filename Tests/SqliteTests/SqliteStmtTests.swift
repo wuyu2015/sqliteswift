@@ -11,12 +11,13 @@ final class SqliteStmtTests: XCTestCase {
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
         XCTAssertNil(insertStmt.bindParameterName(index: 6))
-        try insertStmt.bind(["first", nil, 0, 0.1, 0.2])
+        try insertStmt.bind(["first", nil, true, 0.1, 0.2])
         _ = try insertStmt.step()
         while(try stmt.step()) {
             XCTAssertEqual(stmt.string(index: 0), "first")
             XCTAssertEqual(stmt.optionalString(index: 1), nil)
-            XCTAssertEqual(stmt.int(index: 2), 0)
+            XCTAssertEqual(stmt.int(index: 2), 1)
+            XCTAssertEqual(stmt.bool(index: 2), true)
         }
         try insertStmt.bind("hi", index: 1)
         try insertStmt.bind(1.1, index: 5)

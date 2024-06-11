@@ -93,6 +93,10 @@ extension Sqlite {
             return self
         }
         
+        public func bind(_ value: Bool, index: Int32) throws {
+            try checkResult(sqlite3_bind_int(stmt, index, value ? 1 : 0))
+        }
+        
         public func bind(_ value: Int, index: Int32) throws {
             try checkResult(sqlite3_bind_int64(stmt, index, Int64(value)))
         }
@@ -159,6 +163,8 @@ extension Sqlite {
             }
             for (index, item) in array.enumerated() {
                 switch item {
+                case let value as Bool:
+                    try bind(value, index: Int32(index + 1))
                 case let value as Int:
                     try bind(value, index: Int32(index + 1))
                 case let value as Int64:
@@ -346,6 +352,20 @@ extension Sqlite {
         
         public func columnIndex(_ name: String) -> Int32? {
             return columnMap[name]
+        }
+        
+        public func bool(index: Int32) -> Bool {
+            guard index >= 0 && index < columnCount else {
+                return false
+            }
+            return sqlite3_column_int(stmt, index) != 0
+        }
+        
+        public func bool(name: String) -> Bool {
+            guard let index = columnIndex(name) else {
+                return false
+            }
+            return sqlite3_column_int(stmt, index) != 0
         }
         
         public func int(index: Int32) -> Int32 {
