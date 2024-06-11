@@ -7,11 +7,17 @@ final class SqliteStmtTests: XCTestCase {
         let db = try Sqlite.Db()
         _ = try db.exec("create table test (a text, b text, c integer, d double, e double)")
         let insertStmt = try db.prepare("insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)")
+        let stmt = try db.prepare("select * from test")
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
         XCTAssertNil(insertStmt.bindParameterName(index: 6))
-        try insertStmt.bind(["first", "number 0", 0, 0.1, 0.2])
-        try insertStmt.bind("second", "number 2", -1, 1.1, 1.2)
+        try insertStmt.bind(["first", nil, 0, 0.1, 0.2])
+        _ = try insertStmt.step()
+        while(try stmt.step()) {
+            XCTAssertEqual(stmt.string(index: 0), "first")
+            XCTAssertEqual(stmt.optionalString(index: 1), nil)
+            XCTAssertEqual(stmt.int(index: 2), 0)
+        }
         try insertStmt.bind("hi", index: 1)
         try insertStmt.bind(1.1, index: 5)
         for i in 1...10 {
@@ -19,10 +25,7 @@ final class SqliteStmtTests: XCTestCase {
             try insertStmt.bind(i, index: 3)
             try insertStmt.bind(i, index: 4)
             _ = try insertStmt.step()
-            try insertStmt.reset()
         }
-        
-        let stmt = try db.prepare("select * from test")
         XCTAssertEqual(stmt.columns.count, 5)
         while(try stmt.step()) {
             XCTAssertEqual(stmt.string(index: 0), stmt.string(name: "a"))

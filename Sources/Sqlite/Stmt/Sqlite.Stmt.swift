@@ -153,7 +153,7 @@ extension Sqlite {
             }
         }
         
-        public func bind(_ array: [Any]) throws {
+        public func bind(_ array: [Any?]) throws {
             guard array.count == bindParameterCount else {
                 throw ErrorCode.RANGE
             }
@@ -179,14 +179,12 @@ extension Sqlite {
                     try bind(value, index: Int32(index + 1))
                 case let value as [UInt8]:
                     try bind(value, index: Int32(index + 1))
+                case nil:
+                    try bindNull(index: Int32(index + 1))
                 default:
                     throw ErrorCode.ERROR
                 }
             }
-        }
-        
-        public func bind(_ values: Any...) throws {
-            try bind(values)
         }
         
         /**
@@ -311,6 +309,7 @@ extension Sqlite {
                 db.successCount += 1
                 return true
             case SQLITE_DONE:
+                try reset()
                 successCount += 1
                 db.successCount += 1
                 return false
@@ -325,6 +324,7 @@ extension Sqlite {
                         db.successCount += 1
                         return true
                     case SQLITE_DONE:
+                        try reset()
                         successCount += 1
                         db.successCount += 1
                         return false
@@ -401,6 +401,20 @@ extension Sqlite {
                 return ""
             }
             return string(index: index)
+        }
+        
+        public func optionalString(index: Int32) -> String? {
+            guard let textPointer = sqlite3_column_text(stmt, index) else {
+                return nil
+            }
+            return String(cString: textPointer)
+        }
+        
+        public func optionalString(name: String) -> String? {
+            guard let index = columnIndex(name) else {
+                return nil
+            }
+            return optionalString(index: index)
         }
         
         public func blob(index: Int32) -> Data? {
