@@ -153,6 +153,38 @@ extension Sqlite {
             }
         }
         
+        public func bind(_ array: [Any]) throws {
+            guard array.count == bindParameterCount else {
+                throw ErrorCode.RANGE
+            }
+            for (index, item) in array.enumerated() {
+                switch item {
+                case let value as Int:
+                    try bind(value, index: Int32(index + 1))
+                case let value as Int64:
+                    try bind(value, index: Int32(index + 1))
+                case let value as UInt64:
+                    try bind(value, index: Int32(index + 1))
+                case let value as UInt32:
+                    try bind(value, index: Int32(index + 1))
+                case let value as Int32:
+                    try bind(value, index: Int32(index + 1))
+                case let value as Float:
+                    try bind(value, index: Int32(index + 1))
+                case let value as Double:
+                    try bind(value, index: Int32(index + 1))
+                case let value as String:
+                    try bind(value, index: Int32(index + 1))
+                case let value as UnsafePointer<Int8>:
+                    try bind(value, index: Int32(index + 1))
+                case let value as [UInt8]:
+                    try bind(value, index: Int32(index + 1))
+                default:
+                    throw ErrorCode.ERROR
+                }
+            }
+        }
+        
         /**
          获取准备好的 SQL 语句中指定索引的参数名。
          

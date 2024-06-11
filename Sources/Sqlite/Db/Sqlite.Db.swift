@@ -76,7 +76,7 @@ extension Sqlite {
             return ErrorCode(rawValue: sqlite3_extended_errcode(db))
         }
         
-        public var errMs: String {
+        public var errMsg: String {
             return String(cString: sqlite3_errmsg(db))
         }
         
@@ -204,13 +204,14 @@ extension Sqlite {
             errmsg: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>? = nil
         ) throws {
             useCount += 1
-            return try checkResult(sqlite3_exec(db, sql, callback, userData, errmsg))
+            try checkResult(sqlite3_exec(db, sql, callback, userData, errmsg))
+            successCount += 1
         }
         
         /**
          数据库连接配置
          */
-        public func dbConfig(_ option: Config, _ params: CVarArg...) throws {
+        public func config(_ option: Config, _ params: CVarArg...) throws {
             try checkResult(withVaList(params) { pointer in
                 return sqliteWrapperDbConfig(db, option.rawValue, pointer)
             })
@@ -227,7 +228,7 @@ extension Sqlite {
          [sqlite3_extended_errcode()] 获得最近错误的扩展代码。
          */
         public func extendedResultCodes(_ onOff: Bool) throws {
-            return try checkResult(sqlite3_extended_result_codes(db, onOff ? 1 : 0))
+            try checkResult(sqlite3_extended_result_codes(db, onOff ? 1 : 0))
         }
         
         public func interrupt() {
@@ -253,7 +254,7 @@ extension Sqlite {
          在至少 "ms" 毫秒的休眠后，处理器返回 0，导致 [sqlite3_step()] 返回 [SQLITE_BUSY]。
          */
         public func busyTimeout(_ ms: Int32) throws {
-            return try checkResult(sqlite3_busy_timeout(db, ms))
+            try checkResult(sqlite3_busy_timeout(db, ms))
         }
         
         /**
@@ -459,7 +460,7 @@ extension Sqlite {
         
         @available(OSX 10.12, iOS 10.0, *)
         public func cacheFlush() throws {
-            return try checkResult(sqlite3_db_cacheflush(db))
+            try checkResult(sqlite3_db_cacheflush(db))
         }
         
         @available(OSX 10.14, iOS 12.0, *)
