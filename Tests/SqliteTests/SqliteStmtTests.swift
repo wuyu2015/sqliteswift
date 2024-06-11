@@ -6,13 +6,13 @@ final class SqliteStmtTests: XCTestCase {
     func test1() throws {
         let db = try Sqlite.Db()
         _ = try db.exec("create table test (a text, b text, c integer, d double, e double)")
-        let insertStmt = try db.prepare("insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)")
+        let insertSql = "insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)"
+        let insertStmt = try db.prepare(insertSql)
         let stmt = try db.prepare("select * from test")
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
         XCTAssertNil(insertStmt.bindParameterName(index: 6))
-        try insertStmt.bind(["first", nil, true, 0.1, 0.2])
-        _ = try insertStmt.step()
+        try db.exec(insertSql, bind: ["first", nil, true, 0.1, 0.2])
         while(try stmt.step()) {
             XCTAssertEqual(stmt.string(index: 0), "first")
             XCTAssertEqual(stmt.optionalString(index: 1), nil)

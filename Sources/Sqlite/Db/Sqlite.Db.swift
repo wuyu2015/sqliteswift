@@ -246,6 +246,15 @@ extension Sqlite {
             successCount += 1
         }
         
+        public func exec(_ sql: String, bind: [Any?]) throws {
+            let stmt = try prepare(sql)
+            try stmt.bind(bind)
+            while(try stmt.step()) {
+                
+            }
+            try stmt.finalize()
+        }
+        
         /**
          数据库连接配置
          */
