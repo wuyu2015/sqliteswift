@@ -255,9 +255,8 @@ extension Sqlite {
         }
         
         public func exec(_ sql: String, bind: [Any?]) throws {
-            let stmt = try prepare(sql).bind(bind)
+            let stmt = try prepare(sql, flags: [.NORMALIZE]).bind(bind)
             while(try stmt.step()) {}
-            try stmt.finalize()
         }
         
         /**

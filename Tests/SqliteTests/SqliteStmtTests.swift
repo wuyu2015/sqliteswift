@@ -9,12 +9,12 @@ final class SqliteStmtTests: XCTestCase {
         try db.exec("create table test (a text, b text, c integer, d double, e double)")
         XCTAssertTrue(try db.isTableExists("test"))
         let insertSql = "insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)"
-        let insertStmt = try db.prepare(insertSql) // TODO: API called with finalized prepared statement // misuse at line 96807 of [1b37c146ee]
-        let stmt = try db.prepare("select * from test")
+        try db.exec(insertSql, bind: ["first", nil, true, 0.1, 0.2])
+        let insertStmt = try db.prepare(insertSql)
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
         XCTAssertNil(insertStmt.bindParameterName(6))
-        try db.exec(insertSql, bind: ["first", nil, true, 0.1, 0.2])
+        let stmt = try db.prepare("select * from test")
         while(try stmt.step()) {
             XCTAssertEqual(stmt.string(0), "first")
             XCTAssertEqual(stmt.optionalString(1), nil)
