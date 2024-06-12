@@ -245,7 +245,7 @@ extension Sqlite {
             return sqlite3_bind_parameter_index(stmt, name.withCString { $0 })
         }
         
-        public func clearBinding() throws -> Self {
+        public func clearBindings() throws -> Self {
             return try checkResult(sqlite3_clear_bindings(stmt))
         }
         

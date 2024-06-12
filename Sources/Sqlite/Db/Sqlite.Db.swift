@@ -33,7 +33,7 @@ extension Sqlite {
          对于此函数，即使插入后随后被回滚，插入也被认为是成功的。
          最后，该函数可以通过 last_insert_rowid() SQL function 在 SQL 语句中访问。如果在 sqlite3_last_insert_rowid() 函数运行时，另一个线程在同一数据库连接上执行新的 INSERT，从而更改了最后插入的 [rowid]，那么 sqlite3_last_insert_rowid() 返回的值是不可预测的，可能不等于旧的或新的最后插入的 [rowid]。
          */
-        public var lastId: Int64 {
+        public var lastInsertRowId: Int64 {
             get {
                 return sqlite3_last_insert_rowid(db)
             }
@@ -64,7 +64,7 @@ extension Sqlite {
          在多语句事务中，如果发生特定类型的错误，如 SQLITE_FULL、SQLITE_IOERR 等，则事务可能会自动回滚。
          要确定 SQLite 是否在错误发生后自动回滚事务，可以使用此函数。
          */
-        public var autocommit: Bool {
+        public var autoCommit: Bool {
             return sqlite3_get_autocommit(db) != 0
         }
         
@@ -72,7 +72,7 @@ extension Sqlite {
             return ErrorCode(rawValue: sqlite3_errcode(db))
         }
         
-        public var extendedErrCod: ErrorCode {
+        public var extendedErrCode: ErrorCode {
             return ErrorCode(rawValue: sqlite3_extended_errcode(db))
         }
         
@@ -85,7 +85,7 @@ extension Sqlite {
         }
         
         @available(OSX 10.14, iOS 12.0, *)
-        public var vtabOnChange: Bool {
+        public var vtabNoChange: Bool {
             return sqlite3_vtab_nochange(db) != 0
         }
         
