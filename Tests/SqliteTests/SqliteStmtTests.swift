@@ -5,6 +5,12 @@ import SQLite3
 final class SqliteStmtTests: XCTestCase {
     func test1() throws {
         let db = try Sqlite.Db()
+        XCTAssertTrue(db.dbReadable("main"))
+        XCTAssertTrue(db.dbWritable("main"))
+        XCTAssertFalse(db.dbReadOnly("main"))
+        XCTAssertFalse(db.dbReadable("main2"))
+        XCTAssertFalse(db.dbWritable("main2"))
+        XCTAssertFalse(db.dbReadOnly("main2"))
         XCTAssertFalse(try db.isTableExists("test"))
         try db.exec("create table test (a text, b text, c integer, d double, e double)")
         XCTAssertTrue(try db.isTableExists("test"))

@@ -417,12 +417,18 @@ extension Sqlite {
         }
         
         @available(OSX 10.8, *)
-        public func readOnly(dbName: String? = nil) throws -> Bool {
-            let result = sqlite3_db_readonly(db, dbName)
-            guard result != -1 else {
-                throw DbError.dbNotFound
-            }
-            return result == 1
+        public func dbReadable(_ dbName: String) -> Bool {
+            return sqlite3_db_readonly(db, dbName) != -1
+        }
+        
+        @available(OSX 10.8, *)
+        public func dbWritable(_ dbName: String) -> Bool {
+            return sqlite3_db_readonly(db, dbName) == 0
+        }
+        
+        @available(OSX 10.8, *)
+        public func dbReadOnly(_ dbName: String) -> Bool {
+            return sqlite3_db_readonly(db, dbName) == 1
         }
         
         public func nextStmt(stmt: Stmt) -> Stmt {
