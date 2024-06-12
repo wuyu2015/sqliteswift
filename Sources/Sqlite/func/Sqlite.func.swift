@@ -42,9 +42,9 @@ extension Sqlite {
         return sqlite3_threadsafe() == 2
     }
     
-    public static func config(_ option: DbConfig, _ params: CVarArg...) -> ErrorCode {
+    public static func config(_ option: DbConfig, _ params: CVarArg...) -> SqliteError {
         return withVaList(params) { pointer in
-            return ErrorCode(rawValue: sqliteWrapperConfig(option.rawValue, pointer))
+            return SqliteError(rawValue: sqliteWrapperConfig(option.rawValue, pointer))
         }
     }
     

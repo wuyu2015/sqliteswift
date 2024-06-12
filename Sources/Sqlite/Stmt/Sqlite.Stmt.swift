@@ -14,10 +14,15 @@ extension Sqlite {
         public private(set) var busyCount: Int = 0
         
         /**
-         返回与准备语句关联的原f始 SQL 字符串，如果语句无效或没有关联的 SQL 字符串则返回 nil。
+         返回与准备语句关联的原f始 SQL 字符串
         */
         public lazy var sql: String = {
             return String(cString: sqlite3_sql(stmt))
+        }()
+        
+        @available(OSX 10.12, *)
+        public lazy var expandedSql: String = {
+            return String(cString: sqlite3_expanded_sql(stmt))
         }()
         
         /**
@@ -88,7 +93,7 @@ extension Sqlite {
         @discardableResult
         private func checkResult(_ result: Int32) throws -> Self {
             guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
             }
             return self
         }
@@ -199,7 +204,7 @@ extension Sqlite {
         @discardableResult
         public func bind(_ array: [Any?]) throws -> Self {
             guard array.count == bindParameterCount else {
-                throw ErrorCode.RANGE
+                throw SqliteError.RANGE
             }
             for (index, item) in array.enumerated() {
                 switch item {
@@ -228,7 +233,7 @@ extension Sqlite {
                 case nil:
                     try bindNull(Int32(index + 1))
                 default:
-                    throw ErrorCode.ERROR
+                    throw SqliteError.ERROR
                 }
             }
             return self
@@ -394,12 +399,12 @@ extension Sqlite {
                             usleep(3000000)
                         }
                     default:
-                        throw ErrorCode(rawValue: result)
+                        throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
                     }
                 }
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
             default:
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
             }
         }
         
@@ -534,7 +539,7 @@ extension Sqlite {
         public func finalize() throws {
             let result = sqlite3_finalize(stmt)
             guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
             }
         }
         
@@ -547,7 +552,7 @@ extension Sqlite {
         public func reset() throws {
             let result = sqlite3_reset(stmt)
             guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
             }
         }
         

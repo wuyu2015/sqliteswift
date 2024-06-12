@@ -15,7 +15,7 @@ final class SqliteStmtTests: XCTestCase {
         try db.exec("create table test (a text, b text, c integer, d double, e double)")
         XCTAssertTrue(try db.isTableExists("test"))
         let insertSql = "insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)"
-        try db.exec(insertSql, bind: ["first", nil, true, 0.1, 0.2])
+        try db.exec(insertSql, bind: ["first", nil, true, 0.1, "0.2"])
         let insertStmt = try db.prepare(insertSql)
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
@@ -33,7 +33,7 @@ final class SqliteStmtTests: XCTestCase {
         for i in 1...10 {
             try insertStmt.bind(2, "number \(i)")
             try insertStmt.bind(3, i)
-            try insertStmt.bind(4, i)
+            try insertStmt.bind(4, "\(i)")
             _ = try insertStmt.step()
         }
         try db.rollback()
@@ -65,8 +65,8 @@ final class SqliteStmtTests: XCTestCase {
         XCTAssertEqual(arr.count, 11)
         do {
             try db.vacuum()
-        } catch {
-            print(db.errMsg) // TODO: cannot VACUUM - SQL statements in progress
+        } catch let err as Sqlite.SqliteError {
+            print(err.localizedDescription) // TODO: cannot VACUUM - SQL statements in progress
         }
     }
     

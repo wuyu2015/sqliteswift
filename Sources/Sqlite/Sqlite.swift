@@ -3,7 +3,7 @@ import SQLite3
 public enum Sqlite {
     private static func checkResult(_ result: Int32) throws {
         guard result == SQLITE_OK else {
-            throw ErrorCode(rawValue: result)
+            throw SqliteError(rawValue: result)
         }
     }
     
@@ -61,10 +61,10 @@ public enum Sqlite {
             } else {
                 sqlite3_close(dbPointer)
             }
-            throw ErrorCode(rawValue: result)
+            throw SqliteError(rawValue: result)
         }
         guard let dbPointer else {
-            throw ErrorCode.ERROR
+            throw SqliteError.ERROR
         }
         return dbPointer
     }

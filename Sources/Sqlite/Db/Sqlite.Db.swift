@@ -11,7 +11,7 @@ extension Sqlite {
         
         private func checkResult(_ result: Int32) throws {
             guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result)
             }
         }
         
@@ -68,12 +68,12 @@ extension Sqlite {
             return sqlite3_get_autocommit(db) != 0
         }
         
-        public var errCode: ErrorCode {
-            return ErrorCode(rawValue: sqlite3_errcode(db))
+        public var errCode: SqliteError {
+            return SqliteError(rawValue: sqlite3_errcode(db))
         }
         
-        public var extendedErrCode: ErrorCode {
-            return ErrorCode(rawValue: sqlite3_extended_errcode(db))
+        public var extendedErrCode: SqliteError {
+            return SqliteError(rawValue: sqlite3_extended_errcode(db))
         }
         
         public var errMsg: String {
@@ -362,7 +362,7 @@ extension Sqlite {
             }
             try checkResult(result)
             guard let stmt else {
-                throw ErrorCode.ERROR
+                throw SqliteError.ERROR
             }
             return Stmt(stmt, db: self)
         }
@@ -404,7 +404,7 @@ extension Sqlite {
                 destroy
             )
             guard result == SQLITE_OK else {
-                throw ErrorCode(rawValue: result)
+                throw SqliteError(rawValue: result)
             }
         }
         
