@@ -104,6 +104,11 @@ extension Sqlite {
         }
         
         @discardableResult
+        public func bind(_ index: Int32, _ value: UInt) throws -> Self {
+            return try checkResult(sqlite3_bind_int64(stmt, index, Int64(value)))
+        }
+        
+        @discardableResult
         public func bind(_ index: Int32, _ value: Int8) throws -> Self {
             return try checkResult(sqlite3_bind_int(stmt, index, Int32(value)))
         }
