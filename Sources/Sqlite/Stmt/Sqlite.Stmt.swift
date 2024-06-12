@@ -104,13 +104,28 @@ extension Sqlite {
         }
         
         @discardableResult
-        public func bind(_ index: Int32, _ value: UInt64) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, index, sqlite3_int64(value)))
+        public func bind(_ index: Int32, _ value: Int8) throws -> Self {
+            return try checkResult(sqlite3_bind_int(stmt, index, Int32(value)))
         }
         
         @discardableResult
-        public func bind(_ index: Int32, _ value: Int64) throws -> Self {
-            return try checkResult(sqlite3_bind_int64(stmt, index, value))
+        public func bind(_ index: Int32, _ value: UInt8) throws -> Self {
+            return try checkResult(sqlite3_bind_int(stmt, index, Int32(value)))
+        }
+        
+        @discardableResult
+        public func bind(_ index: Int32, _ value: Int16) throws -> Self {
+            return try checkResult(sqlite3_bind_int(stmt, index, Int32(value)))
+        }
+        
+        @discardableResult
+        public func bind(_ index: Int32, _ value: UInt16) throws -> Self {
+            return try checkResult(sqlite3_bind_int(stmt, index, Int32(value)))
+        }
+        
+        @discardableResult
+        public func bind(_ index: Int32, _ value: Int32) throws -> Self {
+            return try checkResult(sqlite3_bind_int(stmt, index, value))
         }
         
         @discardableResult
@@ -119,8 +134,13 @@ extension Sqlite {
         }
         
         @discardableResult
-        public func bind(_ index: Int32, _ value: Int32) throws -> Self {
-            return try checkResult(sqlite3_bind_int(stmt, index, value))
+        public func bind(_ index: Int32, _ value: Int64) throws -> Self {
+            return try checkResult(sqlite3_bind_int64(stmt, index, value))
+        }
+        
+        @discardableResult
+        public func bind(_ index: Int32, _ value: UInt64) throws -> Self {
+            return try checkResult(sqlite3_bind_int64(stmt, index, sqlite3_int64(value)))
         }
         
         @discardableResult
@@ -153,17 +173,17 @@ extension Sqlite {
         }
         
         @discardableResult
-        public func bind(_ pointer: OpaquePointer!, index: Int32) throws -> Self {
+        public func bind(_ index: Int32, _ pointer: OpaquePointer!) throws -> Self {
             return try checkResult(sqlite3_bind_value(stmt, index, pointer))
         }
         
         @discardableResult
-        public func bindNull(index: Int32 = 0) throws -> Self {
+        public func bindNull(_ index: Int32) throws -> Self {
             return try checkResult(sqlite3_bind_null(stmt, index))
         }
         
         @discardableResult
-        public func bindZeroBlob(index: Int32 = 0, length: Int) throws -> Self {
+        public func bindZeroBlob(_ index: Int32, length: Int) throws -> Self {
             if #available(OSX 10.12, iOS 10.0, *) {
                 return try checkResult(sqlite3_bind_zeroblob64(stmt, index, sqlite3_uint64(length)))
             } else {
@@ -201,7 +221,7 @@ extension Sqlite {
                 case let value as [UInt8]:
                     try bind(Int32(index + 1), value)
                 case nil:
-                    try bindNull(index: Int32(index + 1))
+                    try bindNull(Int32(index + 1))
                 default:
                     throw ErrorCode.ERROR
                 }
