@@ -110,6 +110,10 @@ extension Sqlite {
             return try! prepare("VACUUM;")
         }()
         
+        private lazy var tableExistsStmt: Stmt = {
+            return try! prepare("SELECT [sql] FROM sqlite_master WHERE [type]='table' AND name=?;")
+        }()
+        
         /**
          打开一个新的数据库连接
          
@@ -347,7 +351,7 @@ extension Sqlite {
          
          - Returns: 准备好的 SQLite 语句对象。
         */
-        public func prepare(_ sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt {
+        public func prepare(_ sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE, .NO_VTAB], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt {
             var stmt: OpaquePointer?
             var result: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
@@ -548,6 +552,10 @@ extension Sqlite {
         @discardableResult
         public func vacuum() throws -> Bool {
             return try vacuumStmt.step()
+        }
+        
+        public func isTableExists(_ tableName: String) throws -> Bool {
+            return try tableExistsStmt.bind(1, tableName).step()
         }
         
         deinit {

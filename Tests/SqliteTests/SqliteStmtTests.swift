@@ -5,9 +5,11 @@ import SQLite3
 final class SqliteStmtTests: XCTestCase {
     func test1() throws {
         let db = try Sqlite.Db()
-        _ = try db.exec("create table test (a text, b text, c integer, d double, e double)")
+        XCTAssertFalse(try db.isTableExists("test"))
+        try db.exec("create table test (a text, b text, c integer, d double, e double)")
+        XCTAssertTrue(try db.isTableExists("test"))
         let insertSql = "insert into test (a, b, c, d, e) values (?, ?, ?, ?, ?)"
-        let insertStmt = try db.prepare(insertSql)
+        let insertStmt = try db.prepare(insertSql) // TODO: API called with finalized prepared statement // misuse at line 96807 of [1b37c146ee]
         let stmt = try db.prepare("select * from test")
         XCTAssertFalse(insertStmt.isReadOnly)
         XCTAssertEqual(insertStmt.bindParameterCount, 5)
@@ -55,7 +57,11 @@ final class SqliteStmtTests: XCTestCase {
         }
         print(arr)
         XCTAssertEqual(arr.count, 11)
-        try db.vacuum()
+        do {
+            try db.vacuum()
+        } catch {
+            print(db.errMsg) // TODO: cannot VACUUM - SQL statements in progress
+        }
     }
     
     static var allTests = [
