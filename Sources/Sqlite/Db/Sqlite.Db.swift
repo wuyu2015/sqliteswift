@@ -365,10 +365,10 @@ extension Sqlite {
                 }
             }
             try checkResult(result)
-            guard let stmt else {
+            guard stmt != nil else {
                 throw SqliteError.ERROR
             }
-            let cachedStmt = Stmt(stmt, db: self)
+            let cachedStmt = Stmt(stmt!, db: self)
             if flags.contains(.PERSISTENT) {
                 cachedStmtMap[sql] = cachedStmt
             }

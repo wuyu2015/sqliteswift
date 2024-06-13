@@ -63,10 +63,10 @@ public enum Sqlite {
             }
             throw SqliteError(rawValue: result)
         }
-        guard let dbPointer else {
+        guard dbPointer != nil else {
             throw SqliteError.ERROR
         }
-        return dbPointer
+        return dbPointer!
     }
     
     public static func sleep(_ ms: Int32) throws {

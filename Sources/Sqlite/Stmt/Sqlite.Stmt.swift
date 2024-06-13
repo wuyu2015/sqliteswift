@@ -20,9 +20,12 @@ extension Sqlite {
             return String(cString: sqlite3_sql(stmt))
         }()
         
-        @available(OSX 10.12, *)
         public lazy var expandedSql: String = {
-            return String(cString: sqlite3_expanded_sql(stmt))
+            if #available(OSX 10.12, *) {
+                return String(cString: sqlite3_expanded_sql(stmt))
+            } else {
+                return String(cString: sqlite3_sql(stmt))
+            }
         }()
         
         /**
@@ -76,7 +79,7 @@ extension Sqlite {
         
         init(_ pStmt: OpaquePointer, db: Db? = nil) {
             stmt = pStmt
-            self.db = db ?? Db(db: sqlite3_db_handle(stmt))
+            self.db = db != nil ? db! : Db(db: sqlite3_db_handle(stmt))
             bindParameterCount = sqlite3_bind_parameter_count(stmt)
             var map: [String: Int32] = [:]
             var arr: [String] = []
