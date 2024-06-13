@@ -536,11 +536,9 @@ extension Sqlite {
          调用 sqlite3_finalize 函数后，与该预处理语句相关的资源将被释放，包括编译后的字节码、临时数据结构等。如果没有调用 sqlite3_finalize 函数而直接关闭数据库连接，SQLite库会在数据库连接关闭时自动销毁所有尚未销毁的预处理语句对象，但这并不是一个良好的做法，因为可能会导致内存泄漏或其他问题。
          在使用完一个预处理语句对象后，应该调用 sqlite3_finalize 来释放资源，这样可以确保程序在执行过程中不会出现资源泄漏或其他问题。
          */
-        public func finalize() throws {
-            let result = sqlite3_finalize(stmt)
-            guard result == SQLITE_OK else {
-                throw SqliteError(rawValue: result, message: db.errMsg, sql: expandedSql)
-            }
+        @discardableResult
+        public func finalize() -> Bool {
+            return sqlite3_finalize(stmt) == SQLITE_OK
         }
         
         /**
@@ -558,10 +556,6 @@ extension Sqlite {
         
         public func status(_ op: StmtStatus, reset: Bool = false) -> Int32 {
             return sqlite3_stmt_status(stmt, op.rawValue, reset ? 1 : 0)
-        }
-        
-        deinit {
-            try? finalize()
         }
     }
 }

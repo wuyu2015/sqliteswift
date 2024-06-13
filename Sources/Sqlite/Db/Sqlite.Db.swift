@@ -8,6 +8,7 @@ extension Sqlite {
         public internal(set) var useCount: Int = 0
         public internal(set) var successCount: Int = 0
         public internal(set) var busyCount: Int = 0
+        private var cachedStmtMap: [String: Stmt] = [:]
         
         private func checkResult(_ result: Int32) throws {
             guard result == SQLITE_OK else {
@@ -254,8 +255,8 @@ extension Sqlite {
             successCount += 1
         }
         
-        public func exec(_ sql: String, bind: [Any?]) throws {
-            let stmt = try prepare(sql, flags: [.NORMALIZE]).bind(bind)
+        public func exec(_ sql: String, bind: [Any?], flags: PrepareFlag = [.PERSISTENT, .NORMALIZE, .NO_VTAB]) throws {
+            let stmt = try prepare(sql, flags: flags).bind(bind)
             while(try stmt.step()) {}
         }
         
@@ -351,6 +352,9 @@ extension Sqlite {
          - Returns: 准备好的 SQLite 语句对象。
         */
         public func prepare(_ sql: String, flags: PrepareFlag = [.PERSISTENT, .NORMALIZE, .NO_VTAB], tail: UnsafeMutablePointer<UnsafePointer<Int8>?>? = nil) throws -> Stmt {
+            if flags.contains(.PERSISTENT), let cachedStmt = cachedStmtMap[sql] {
+                return cachedStmt
+            }
             var stmt: OpaquePointer?
             var result: Int32
             if #available(macOS 10.14, iOS 12.0, *) {
@@ -364,7 +368,11 @@ extension Sqlite {
             guard let stmt else {
                 throw SqliteError.ERROR
             }
-            return Stmt(stmt, db: self)
+            let cachedStmt = Stmt(stmt, db: self)
+            if flags.contains(.PERSISTENT) {
+                cachedStmtMap[sql] = cachedStmt
+            }
+            return cachedStmt
         }
         
         /**
@@ -431,8 +439,11 @@ extension Sqlite {
             return sqlite3_db_readonly(db, dbName) == 1
         }
         
-        public func nextStmt(stmt: Stmt) -> Stmt {
-            return Stmt(sqlite3_next_stmt(db, stmt.stmt), db: self)
+        public func nextStmt(_ stmt: Stmt? = nil) -> Stmt? {
+            guard let next = sqlite3_next_stmt(db, stmt != nil ? stmt!.stmt : nil) else {
+                return nil
+            }
+            return Stmt(next, db: self)
         }
         
         public func commitHook(
@@ -556,6 +567,10 @@ extension Sqlite {
         
         @discardableResult
         public func vacuum() throws -> Bool {
+            for (_, stmt) in cachedStmtMap {
+                stmt.finalize()
+            }
+            cachedStmtMap.removeAll()
             return try vacuumStmt.step()
         }
         

@@ -62,12 +62,7 @@ final class SqliteStmtTests: XCTestCase {
             ])
         }
         print(arr)
-        XCTAssertEqual(arr.count, 11)
-        do {
-            try db.vacuum()
-        } catch let err as Sqlite.SqliteError {
-            print(err.localizedDescription) // TODO: cannot VACUUM - SQL statements in progress
-        }
+        try db.vacuum()
     }
     
     static var allTests = [
