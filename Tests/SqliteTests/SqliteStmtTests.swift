@@ -31,18 +31,20 @@ final class SqliteStmtTests: XCTestCase {
         try insertStmt.bind(5, 1.1)
         try db.begin()
         for i in 1...10 {
-            try insertStmt.bind(2, "number \(i)")
-            try insertStmt.bind(3, i)
-            try insertStmt.bind(4, "\(i)")
-            _ = try insertStmt.step()
+            try _ = insertStmt
+                .bind(2, "number \(i)")
+                .bind(3, i)
+                .bind(4, "\(i)")
+                .step()
         }
         try db.rollback()
         try db.begin()
         for i in 11...20 {
-            try insertStmt.bind(2, "number \(i)")
-            try insertStmt.bind(3, i)
-            try insertStmt.bind(4, i)
-            _ = try insertStmt.step()
+            try _ = insertStmt
+                .bind(2, "number \(i)")
+                .bind(3, i)
+                .bind(4, "\(i)")
+                .step()
         }
         try db.commit()
         XCTAssertEqual(stmt.columns.count, 5)
